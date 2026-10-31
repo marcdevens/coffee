@@ -246,7 +246,7 @@
           <div class="detail" id="grind-detail">${detail}</div>
         </div>
       </div>
-      <div class="tip">${tip}</div>
+      ${tip ? `<div class="tip">${tip}</div>` : ''}
     </div>`;
   calc.addEventListener('click', (e) => {
     // go back if we got here from the picker, otherwise (opened directly on #drip) just clear the hash
@@ -365,7 +365,7 @@
   }
 
   const GRIND_TIPS = {
-    drip: `Cone filter? Try <b>24–26</b>.`,
+    drip: '',  // OXO Barista Brain takes flat-bottom basket filters; 28 suits it
     pourover: `Draining past ~3:30 or tastes bitter? Go coarser, <b>26–27</b>. Done before 3:00 or tastes sour? Go finer, <b>21–22</b>.`,
     press: `Muddy or silty cup? Go coarser, <b>36–38</b>. Thin or sour? Try <b>32</b>.`,
   };
