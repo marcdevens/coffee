@@ -103,7 +103,12 @@
     font-size: 30px; font-weight: 700; font-variant-numeric: tabular-nums; padding: 0; height: 56px;
   }
   .num .unit { font-size: 17px; color: var(--muted); flex: none; width: 2.2em; }
-  .sub { font-size: 14px; color: var(--muted); text-align: right; padding-right: 68px; margin-top: 6px; min-height: 1.2em; }
+  .sub { font-size: 14px; color: var(--muted); text-align: right; padding-right: 68px; margin-top: 6px; }
+  .section-head { display: flex; align-items: center; justify-content: space-between; margin: 20px 4px 8px; }
+  .section-head h2 { margin: 0; }
+  .seg { display: inline-flex; background: var(--surface-2); border-radius: 10px; padding: 3px; }
+  .seg button { border: 0; background: none; padding: 4px 14px; border-radius: 8px; font-size: 15px; font-weight: 600; color: var(--muted); }
+  .seg button[aria-pressed="true"] { background: var(--surface); color: var(--text); box-shadow: var(--shadow); }
 
   .grind-card { margin-top: 16px; padding: 12px 14px; }
   .grind { display: flex; align-items: center; gap: 12px; }
@@ -188,14 +193,14 @@
     drip:  { name: 'Drip', ratio: 16, grind: 28, water: 4 * CUP },
     pourover: { name: 'Pourover', ratio: 16, grind: 24, water: 320 },
     press: { name: 'French Press', ratio: 15, grind: 34, water: 20 * OZ },
-    moka:  { name: 'Moka Pot', grind: 15, fixed: true, water: 300, coffee: 25 },
+    moka:  { name: 'Moka Pot', grind: 17, fixed: true, water: 300, coffee: 25 },
   };
 
   // ---- persisted state ----
   const KEY = 'coffee-v1';
   // Encore ESP output speeds up as the grind gets coarser: ~1.3 g/s at setting 10, ~2.2 g/s at 30 (retailer specs)
   const grindRate = (setting) => Math.min(2.4, Math.max(1.2, 1.3 + (setting - 10) * 0.045));
-  const state = { drip: {}, pourover: {}, press: {} };
+  const state = { unit: 'g', drip: {}, pourover: {}, press: {} };
   try { Object.assign(state, JSON.parse(localStorage.getItem(KEY)) || {}); } catch (e) {}
   for (const id of ['drip', 'pourover', 'press']) {
     state[id] = Object.assign({ water: METHODS[id].water, ratio: METHODS[id].ratio }, state[id]);
@@ -204,14 +209,32 @@
 
   // ---- formatting ----
   const round = (n, d) => { const f = 10 ** d; return Math.round(n * f) / f; };
-  // grams everywhere, with ounces as the secondary readout
-  const toInput = (g, kind) => String(round(g, kind === 'water' ? 0 : 1));
-  const fmt = (g, kind) => toInput(g, kind) + 'g';
-  const oz = (g, d) => `${round(g / OZ, d)}oz`;
+  const isOz = () => state.unit === 'oz';
+  // value shown in an input, in the current unit
+  const toInput = (g, kind) => isOz()
+    ? String(round(g / OZ, kind === 'water' ? 1 : 2))
+    : String(round(g, kind === 'water' ? 0 : 1));
+  // text with unit, for steps and the timer
+  const fmt = (g, kind) => toInput(g, kind) + (isOz() ? 'oz' : 'g');
   const cupsText = (g) => { const c = round(g / CUP, 1); return c + (c === 1 ? ' cup' : ' cups'); };
   const secs = (g, setting) => Math.max(1, Math.round(g / grindRate(setting)));
 
+  let onUnitChange = null;
+  const unitToggleHTML = () => `
+    <div class="seg" role="group" aria-label="Units">
+      <button type="button" data-unit="g" aria-pressed="${!isOz()}">g</button>
+      <button type="button" data-unit="oz" aria-pressed="${isOz()}">oz</button>
+    </div>`;
+  const sectionHead = (title) => `<div class="section-head"><h2>${title}</h2>${unitToggleHTML()}</div>`;
+
   document.addEventListener('click', (e) => {
+    const u = e.target.closest('[data-unit]');
+    if (u) {
+      state.unit = u.dataset.unit; save();
+      document.querySelectorAll('[data-unit]').forEach(b => b.setAttribute('aria-pressed', String(b.dataset.unit === state.unit)));
+      if (onUnitChange) onUnitChange();
+      return;
+    }
     const go = e.target.closest('[data-go]');
     if (go) { cameFromHome = true; location.hash = go.dataset.go; }
   });
@@ -223,6 +246,7 @@
   let cameFromHome = false;
   function route() {
     if (cleanup) { cleanup(); cleanup = null; }
+    onUnitChange = null;
     const id = location.hash.slice(1);
     if (!METHODS[id]) { cameFromHome = false; calc.hidden = true; home.hidden = false; document.title = 'Coffee'; return; }
     home.hidden = true; calc.hidden = false;
@@ -254,7 +278,7 @@
     if (e.target.closest('[data-back]')) cameFromHome ? history.back() : (location.hash = '');
   });
 
-  const stepperHTML = (key, label) => `
+  const stepperHTML = (key, label, note) => `
     <div class="field">
       <label for="in-${key}">${label}</label>
       <div class="stepper">
@@ -265,7 +289,7 @@
         </div>
         <button type="button" data-step="${key}" data-dir="1" aria-label="More ${label.toLowerCase()}">+</button>
       </div>
-      <div class="sub" id="sub-${key}"></div>
+      ${note ? `<div class="sub" id="sub-${key}"></div>` : ''}
     </div>`;
 
   // ---- drip & french press ----
@@ -273,13 +297,14 @@
     const m = METHODS[id];
     const s = state[id];
     const isDrip = id === 'drip';
+    const ratioEditable = id === 'pourover';
+    if (!ratioEditable) s.ratio = m.ratio;   // drip and French press use a fixed ratio
 
-    calc.innerHTML = headerHTML(m.name) + grindHTML(m.grind, '', GRIND_TIPS[id]) + `
-      <h2>Amounts</h2>
+    calc.innerHTML = headerHTML(m.name) + grindHTML(m.grind, '', GRIND_TIPS[id]) + sectionHead('Amounts') + `
       <div class="card">
-        ${isDrip
-          ? stepperHTML('cups', 'Carafe cups') + stepperHTML('coffee', 'Coffee')
-          : stepperHTML('water', 'Water') + stepperHTML('coffee', 'Coffee') + stepperHTML('ratio', 'Ratio (water per 1 coffee)')}
+        ${isDrip ? stepperHTML('cups', 'Carafe cups') : stepperHTML('water', 'Water')}
+        ${stepperHTML('coffee', 'Coffee')}
+        ${ratioEditable ? stepperHTML('ratio', 'Ratio (water per 1 coffee)', true) : ''}
       </div>
 
       ${isDrip ? '' : `
@@ -313,14 +338,9 @@
       for (const k in inputs) if (inputs[k] && k !== except) inputs[k].value = val[k]();
       calc.querySelectorAll('[data-unit-label]').forEach(el => {
         const k = el.dataset.unitLabel;
-        el.textContent = k === 'ratio' ? '' : k === 'cups' ? 'cups' : 'g';
+        el.textContent = k === 'ratio' ? '' : k === 'cups' ? 'cups' : state.unit;
       });
-      $('#sub-coffee').textContent = oz(coffee(), 2);
-      if (isDrip) $('#sub-cups').textContent = `${oz(s.water, 0)} water`;
-      else {
-        $('#sub-water').textContent = oz(s.water, 1);
-        $('#sub-ratio').textContent = s.ratio < 14 ? 'Very strong' : s.ratio < 15 ? 'Strong' : s.ratio <= 17 ? 'Standard' : s.ratio <= 18 ? 'Light' : 'Very light';
-      }
+      if (ratioEditable) $('#sub-ratio').textContent = s.ratio < 14 ? 'Very strong' : s.ratio < 15 ? 'Strong' : s.ratio <= 17 ? 'Standard' : s.ratio <= 18 ? 'Light' : 'Very light';
 
       $('#grind-detail').textContent = `Grind about ${secs(coffee(), m.grind)}s`;
       $('#steps').innerHTML = STEPS[id](s.water, coffee()).map(t => `<li>${t}</li>`).join('');
@@ -343,7 +363,7 @@
       el.addEventListener('input', () => {
         const raw = parseFloat(el.value.replace(',', '.'));
         if (!(raw > 0)) return;
-        set(k, raw);
+        set(k, k === 'water' || k === 'coffee' ? (isOz() ? raw * OZ : raw) : raw);
         paint(k);
       });
       el.addEventListener('blur', () => paint());
@@ -355,37 +375,45 @@
       const k = b.dataset.step, dir = +b.dataset.dir;
       if (k === 'cups') set('cups', Math.max(1, Math.round(s.water / CUP) + dir));
       else if (k === 'ratio') set('ratio', round(s.ratio + dir * 0.5, 1));
-      else if (k === 'water') set('water', (Math.round(s.water / 25) + dir) * 25);
-      else if (k === 'coffee') set('coffee', Math.max(1, Math.round(coffee()) + dir));
+      else if (k === 'water') {
+        const step = isOz() ? OZ : 25;
+        set('water', (Math.round(s.water / step) + dir) * step);
+      } else if (k === 'coffee') {
+        const step = isOz() ? OZ / 10 : 1;
+        set('coffee', Math.max(step, (Math.round(coffee() / step) + dir) * step));
+      }
       paint();
     }));
 
     let resetTimer = null;
     if (!isDrip) ({ cleanup, refresh: resetTimer } = setupTimer(() => TIMERS[id](s.water, coffee())));
+    onUnitChange = () => paint();
     paint();
   }
 
   const GRIND_TIPS = {
     drip: '',  // OXO Barista Brain takes flat-bottom basket filters; 28 suits it
     pourover: `Draining past ~3:30 or tastes bitter? Go coarser, <b>26–27</b>. Done before 3:00 or tastes sour? Go finer, <b>21–22</b>.`,
-    press: `Muddy or silty cup? Go coarser, <b>36–38</b>. Thin or sour? Try <b>32</b>.`,
+    press: '',
   };
 
   const dripSteps = (water, coffee) => [
-    `Fill the reservoir to <strong>${cupsText(water)}</strong> on the carafe (${oz(water, 0)}).`,
-    `Grind <strong>${fmt(coffee, 'coffee')}</strong> on setting <strong>28</strong>, about <strong>${secs(coffee, 28)}s</strong>.`,
-    `Put a filter in the basket, add the grounds, and give it a shake to level the bed.`,
-    `Start the brew.`,
+    `Fill the reservoir to <strong>${cupsText(water)}</strong> on the carafe (${fmt(water, 'water')})`,
+    `Grind <strong>${fmt(coffee, 'coffee')}</strong> on setting <strong>28</strong> (about ${secs(coffee, 28)}s)`,
+    `Put a filter in the basket, add the grounds, and shake to level the bed`,
+    `Start the brew`,
   ];
 
   const pressSteps = (water, coffee) => {
     const bloom = Math.min(water, coffee * 2);
     return [
-      `Heat water to ~<strong>200°F</strong> (boil, then wait about 30s).`,
-      `Grind <strong>${fmt(coffee, 'coffee')}</strong> on setting <strong>34</strong> (about ${secs(coffee, 34)}s) and add to the press.`,
-      `Start the timer. Pour <strong>${fmt(bloom, 'water')}</strong> to bloom, making sure all the grounds are wet. Wait 30s.`,
-      `Pour the remaining <strong>${fmt(water - bloom, 'water')}</strong> (total <strong>${fmt(water, 'water')}</strong>). Lid on, plunger up. Steep <strong>4min</strong>.`,
-      `Stir to break the crust and skim off the foam. Press slowly (~20s) and pour it all right away so it stops brewing.`,
+      `Heat water to ~<strong>200°F</strong> (boil, then wait about 30s)`,
+      `Grind <strong>${fmt(coffee, 'coffee')}</strong> on setting <strong>34</strong> (about ${secs(coffee, 34)}s) and add to the press`,
+      `Start the timer and pour <strong>${fmt(bloom, 'water')} of water</strong> over all the grounds to bloom, making sure every bit is wet`,
+      `At 0:30, pour the remaining <strong>${fmt(water - bloom, 'water')}</strong> of water (<strong>${fmt(water, 'water')}</strong> total)`,
+      `Put the lid on with the plunger up and steep <strong>4min</strong>`,
+      `Stir to break the crust and skim off the foam`,
+      `Press slowly (~20s) and pour it all right away so it stops brewing`,
     ];
   };
 
@@ -398,12 +426,15 @@
   const pouroverSteps = (water, coffee) => {
     const p = pouroverPours(water, coffee);
     return [
-      `Heat water to ~<strong>205°F</strong> (just off the boil).`,
-      `Put a Wave filter in the dripper and rinse it with hot water, pouring into the center so the ridges don't flatten. Dump the rinse water.`,
-      `Grind <strong>${fmt(coffee, 'coffee')}</strong> on setting <strong>24</strong> (about ${secs(coffee, 24)}s). Add to the filter and shake it level.`,
-      `Start the timer. Pour <strong>${fmt(p.bloom, 'water')}</strong> in a slow spiral to wet all the grounds. Wait 45s.`,
-      `Pour in slow circles in the middle, keeping off the paper: up to <strong>${fmt(p.p2, 'water')}</strong> at 0:45, <strong>${fmt(p.p3, 'water')}</strong> at 1:15, and <strong>${fmt(p.total, 'water')}</strong> at 1:45. These are totals on the scale.`,
-      `Let it drain. It should finish around <strong>3:00–3:30</strong>. Swirl and serve.`,
+      `Heat water to ~<strong>205°F</strong> (just off the boil)`,
+      `Put a Wave filter in the dripper and rinse it with hot water, pouring into the center so the ridges don't flatten`,
+      `Dump the rinse water`,
+      `Grind <strong>${fmt(coffee, 'coffee')}</strong> on setting <strong>24</strong> (about ${secs(coffee, 24)}s), add it to the filter, and shake it level`,
+      `Start the timer and pour <strong>${fmt(p.bloom, 'water')} of water</strong> in a slow spiral to wet all the grounds`,
+      `At 0:45, pour to <strong>${fmt(p.p2, 'water')}</strong> total in slow circles in the middle, keeping off the paper`,
+      `At 1:15, pour to <strong>${fmt(p.p3, 'water')}</strong> total`,
+      `At 1:45, pour to <strong>${fmt(p.total, 'water')}</strong> total`,
+      `Let it drain (it should finish around <strong>3:00–3:30</strong>), then swirl and serve`,
     ];
   };
 
@@ -504,26 +535,30 @@
   // ---- moka pot (amounts fixed by the pot) ----
   function renderMoka() {
     const m = METHODS.moka;
+    const water = isOz() ? `${round(m.water / OZ, 1)}oz` : `${m.water}ml`;
     calc.innerHTML = headerHTML(m.name)
-      + grindHTML(m.grind, `Grind about ${secs(m.coffee, m.grind)}s`, `Bitter or sputtering? Go coarser, <b>17–20</b>. Sour or thin? Go finer.`) + `
-      <h2>6-cup Bialetti Moka Express</h2>
+      + grindHTML(m.grind, `Grind about ${secs(m.coffee, m.grind)}s`, `Bitter or sputtering? Go coarser, <b>19–20</b>. Sour or thin? Go finer, <b>15</b>.`)
+      + sectionHead('6-cup Bialetti Moka Express') + `
       <div class="card">
         <div class="fixed">
-          <div><div class="v">~${m.water}ml</div><div class="k">Water, to just under the valve</div></div>
+          <div><div class="v">~${water}</div><div class="k">Water, to just under the valve</div></div>
           <div><div class="v">~${fmt(m.coffee, 'coffee')}</div><div class="k">Coffee, a full level basket</div></div>
         </div>
-        <div class="tip">The pot sets the amounts, so there's nothing to calculate. Makes ~240ml. Don't under-fill the basket to make less; it brews unevenly.</div>
+        <div class="tip">The pot sets the amounts, so there's nothing to calculate. Makes ~${isOz() ? `${round(240 / OZ, 0)}oz` : '240ml'}. Don't under-fill the basket to make less; it brews unevenly.</div>
       </div>
 
       <h2>Steps</h2>
       <div class="card"><ol class="steps">
-        <li>Boil water. Fill the bottom chamber with the <strong>hot</strong> water to just below the valve. Starting hot keeps the grounds from cooking and tasting bitter or metallic.</li>
-        <li>Grind <strong>~${fmt(m.coffee, 'coffee')}</strong> on setting <strong>${m.grind}</strong>. Fill the basket completely and level it with a finger. <strong>Don't press it down.</strong> Wipe any grounds off the rim.</li>
-        <li>Drop in the basket and screw on the top, holding the base with a towel (it's hot).</li>
-        <li>Heat on <strong>medium-low</strong> with the lid open so you can watch.</li>
-        <li>When the coffee turns <strong>light brown</strong> and starts <strong>gurgling</strong>, take it off the heat and run the base under cold water to stop the brew.</li>
+        <li>Boil water and fill the bottom chamber with the <strong>hot</strong> water to just below the valve (starting hot keeps the grounds from cooking and tasting bitter)</li>
+        <li>Grind <strong>~${fmt(m.coffee, 'coffee')}</strong> on setting <strong>${m.grind}</strong> (about ${secs(m.coffee, m.grind)}s)</li>
+        <li>Fill the basket completely and level it with a finger, <strong>without pressing it down</strong></li>
+        <li>Wipe any grounds off the rim</li>
+        <li>Drop in the basket and screw on the top, holding the base with a towel (it's hot)</li>
+        <li>Heat on <strong>medium-low</strong> with the lid open so you can watch</li>
+        <li>When the coffee turns <strong>light brown</strong> and starts <strong>gurgling</strong>, take it off the heat and run the base under cold water to stop the brew</li>
       </ol></div>
     `;
+    onUnitChange = renderMoka;
   }
 
   route();
