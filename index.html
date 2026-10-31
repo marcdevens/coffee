@@ -169,6 +169,11 @@
         <span class="name">Drip</span>
         <span class="chev" aria-hidden="true">›</span>
       </button>
+      <button class="method" data-go="kalita">
+        <span class="ico" aria-hidden="true"><svg viewBox="0 0 24 24"><path d="M4.75 3.75h14.5l-3 7.5h-8.5z"/><path d="M9.5 6.25l.75 2.5m4.25-2.5l-.75 2.5"/><path d="M5.75 13.25h12.5"/><path d="M7.25 13.25v4.5a3 3 0 0 0 3 3h3.5a3 3 0 0 0 3-3v-4.5m0 1.5h.75a1.75 1.75 0 0 1 0 3.5h-.75"/></svg></span>
+        <span class="name">Kalita Wave</span>
+        <span class="chev" aria-hidden="true">›</span>
+      </button>
       <button class="method" data-go="press">
         <span class="ico" aria-hidden="true"><svg viewBox="0 0 24 24"><path d="M8.5 2.75H13m-2.25 0v4.5"/><rect width="11" height="14" x="5.25" y="7.25" rx="2"/><path d="M5.25 12.5h11m0-2.75h2a2 2 0 0 1 2 2v4.5a2 2 0 0 1-2 2h-2"/></svg></span>
         <span class="name">French Press</span>
@@ -192,15 +197,16 @@
 
   const METHODS = {
     drip:  { name: 'Drip', ratio: 16, grind: 28, water: 4 * CUP },
+    kalita: { name: 'Kalita Wave', ratio: 16, grind: 24, water: 320 },
     press: { name: 'French Press', ratio: 15, grind: 34, water: 20 * OZ },
     moka:  { name: 'Moka Pot', grind: 15, fixed: true, water: 300, coffee: 25 },
   };
 
   // ---- persisted state ----
   const KEY = 'coffee-v1';
-  const state = { unit: 'g', gps: 2.0, drip: {}, press: {} };
+  const state = { unit: 'g', gps: 2.0, drip: {}, kalita: {}, press: {} };
   try { Object.assign(state, JSON.parse(localStorage.getItem(KEY)) || {}); } catch (e) {}
-  for (const id of ['drip', 'press']) {
+  for (const id of ['drip', 'kalita', 'press']) {
     state[id] = Object.assign({ water: METHODS[id].water, ratio: METHODS[id].ratio }, state[id]);
   }
   const save = () => { try { localStorage.setItem(KEY, JSON.stringify(state)); } catch (e) {} };
@@ -300,9 +306,7 @@
             <div class="detail" id="grind-detail"></div>
           </div>
         </div>
-        <div class="tip">${isDrip
-          ? `Grind time assumes the grinder puts out <span class="rate"><input id="gps" inputmode="decimal" aria-label="Grams per second"> g/s</span>. Weigh one grind to check yours. Cone filter? Try <b>24–26</b>.`
-          : `Muddy or silty cup? Go coarser, <b>36–38</b>. Thin or sour? Try <b>32</b>.`}</div>
+        <div class="tip">${GRIND_TIPS[id]}</div>
       </div>
 
       ${isDrip ? '' : `
@@ -347,8 +351,9 @@
 
       $('#grind-detail').textContent = isDrip
         ? `Grind ~${secs(coffee())} s for ${fmt(coffee(), 'coffee')}`
-        : `Coarse · ${fmt(coffee(), 'coffee')}`;
-      $('#steps').innerHTML = (isDrip ? dripSteps : pressSteps)(s.water, coffee()).map(t => `<li>${t}</li>`).join('');
+        : `${id === 'press' ? 'Coarse' : 'Medium-fine'} · ${fmt(coffee(), 'coffee')}`;
+      $('#steps').innerHTML = STEPS[id](s.water, coffee()).map(t => `<li>${t}</li>`).join('');
+      if (resetTimer) resetTimer();
       save();
     }
 
@@ -399,9 +404,16 @@
       gps.addEventListener('focus', () => gps.select());
     }
 
+    let resetTimer = null;
+    if (!isDrip) ({ cleanup, refresh: resetTimer } = setupTimer(() => TIMERS[id](s.water, coffee())));
     paint();
-    if (!isDrip) cleanup = setupTimer();
   }
+
+  const GRIND_TIPS = {
+    drip: `Grind time assumes the grinder puts out <span class="rate"><input id="gps" inputmode="decimal" aria-label="Grams per second"> g/s</span>. Weigh one grind to check yours. Cone filter? Try <b>24–26</b>.`,
+    kalita: `Draining past ~3:30 or tastes bitter? Go coarser, <b>26–27</b>. Done before 3:00 or tastes sour? Go finer, <b>21–22</b>.`,
+    press: `Muddy or silty cup? Go coarser, <b>36–38</b>. Thin or sour? Try <b>32</b>.`,
+  };
 
   const dripSteps = (water, coffee) => [
     `Fill the reservoir with <strong>${fmt(water, 'water')}</strong> of water (<strong>${cupsText(water)}</strong> on the carafe).`,
@@ -421,12 +433,55 @@
     ];
   };
 
-  // ---- french press timer ----
-  function setupTimer() {
-    const PHASES = [
-      { label: 'Bloom', secs: 30, next: 'Then pour the rest of the water' },
-      { label: 'Steep', secs: 240, next: 'Then stir, skim and press' },
+  // Kalita pours: bloom at 2.5× coffee, then pulse to ~45%, ~70% and 100% of the water
+  const kalitaPours = (water, coffee) => {
+    const bloom = Math.min(water, coffee * 2.5);
+    return { bloom, p2: Math.max(bloom, water * 0.45), p3: water * 0.7, total: water };
+  };
+
+  const kalitaSteps = (water, coffee) => {
+    const p = kalitaPours(water, coffee);
+    return [
+      `Heat water to ~<strong>205°F</strong> (just off the boil).`,
+      `Put a Wave filter in the dripper and rinse it with hot water, pouring into the center so the ridges don't flatten. Dump the rinse water.`,
+      `Grind <strong>${fmt(coffee, 'coffee')}</strong> on setting <strong>24</strong>. Add to the filter and shake it level.`,
+      `Start the timer. Pour <strong>${fmt(p.bloom, 'water')}</strong> in a slow spiral to wet all the grounds. Wait 45 s.`,
+      `Pour in slow circles in the middle, keeping off the paper: up to <strong>${fmt(p.p2, 'water')}</strong> at 0:45, <strong>${fmt(p.p3, 'water')}</strong> at 1:15, and <strong>${fmt(p.total, 'water')}</strong> at 1:45. These are totals on the scale.`,
+      `Let it drain. It should finish around <strong>3:00–3:30</strong>. Swirl and serve.`,
     ];
+  };
+
+  const STEPS = { drip: dripSteps, kalita: kalitaSteps, press: pressSteps };
+
+  const TIMERS = {
+    press: () => ({
+      idle: '30 s bloom, then 4 min steep',
+      phases: [
+        { label: 'Bloom', secs: 30, next: 'Then pour the rest of the water' },
+        { label: 'Steep', secs: 240, next: 'Then stir, skim and press' },
+      ],
+      done: ['Press', 'Stir, skim, press slowly, and pour'],
+    }),
+    kalita: (water, coffee) => {
+      const p = kalitaPours(water, coffee);
+      return {
+        idle: `Bloom, three pours, then drain · ~3:30`,
+        phases: [
+          { label: `Bloom · pour ${fmt(p.bloom, 'water')}`, secs: 45, next: `Next: pour to ${fmt(p.p2, 'water')}` },
+          { label: `Pour to ${fmt(p.p2, 'water')}`, secs: 30, next: `Next: pour to ${fmt(p.p3, 'water')}` },
+          { label: `Pour to ${fmt(p.p3, 'water')}`, secs: 30, next: `Next: pour to ${fmt(p.total, 'water')}` },
+          { label: `Pour to ${fmt(p.total, 'water')}`, secs: 30, next: 'Then let it drain' },
+          { label: 'Drawdown', secs: 75, next: 'Should finish around 3:00–3:30' },
+        ],
+        done: ['Done', 'Swirl and serve'],
+      };
+    },
+  };
+
+  // ---- brew timer (French press, Kalita) ----
+  function setupTimer(getPlan) {
+    let plan = getPlan();
+    let PHASES = plan.phases;
     const box = calc.querySelector('#timer');
     const ph = calc.querySelector('#t-phase'), clock = calc.querySelector('#t-clock'), next = calc.querySelector('#t-next');
     const start = calc.querySelector('#t-start'), reset = calc.querySelector('#t-reset');
@@ -455,8 +510,9 @@
     function stop() { clearInterval(tick); tick = null; wake(false); }
     function idle() {
       stop(); idx = 0; box.classList.remove('alert');
+      plan = getPlan(); PHASES = plan.phases;
       ph.textContent = 'Ready'; clock.textContent = mmss(PHASES[0].secs);
-      next.textContent = '30 s bloom, then 4 min steep';
+      next.textContent = plan.idle;
       start.hidden = false; start.textContent = 'Start'; reset.hidden = true;
     }
     function update() {
@@ -468,12 +524,13 @@
         idx++; t0 = Date.now(); beep(1); update();
       } else {
         stop(); beep(3); box.classList.add('alert');
-        ph.textContent = 'Done'; clock.textContent = 'Press'; next.textContent = 'Stir, skim, press slowly, and pour';
+        ph.textContent = 'Done'; clock.textContent = plan.done[0]; next.textContent = plan.done[1];
       }
     }
     start.addEventListener('click', () => {
       try { audio = audio || new (window.AudioContext || window.webkitAudioContext)(); audio.resume(); } catch (e) {}
       idx = 0; t0 = Date.now(); box.classList.remove('alert');
+      plan = getPlan(); PHASES = plan.phases;
       start.hidden = true; reset.hidden = false;
       wake(true); update(); tick = setInterval(update, 250);
     });
@@ -481,7 +538,11 @@
     const onVis = () => { if (document.visibilityState === 'visible' && tick) { wake(true); update(); } };
     document.addEventListener('visibilitychange', onVis);
     idle();
-    return () => { stop(); document.removeEventListener('visibilitychange', onVis); if (audio) audio.close(); };
+    return {
+      cleanup: () => { stop(); document.removeEventListener('visibilitychange', onVis); if (audio) audio.close(); },
+      // amounts changed: update the idle readout, but never interrupt a running brew
+      refresh: () => { if (!tick && !box.classList.contains('alert')) idle(); },
+    };
   }
 
   // ---- moka pot (amounts fixed by the pot) ----
