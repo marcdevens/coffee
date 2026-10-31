@@ -196,7 +196,7 @@
 
   const METHODS = {
     drip:  { name: 'Drip', ratio: 16, grind: 28, water: 4 * CUP },
-    pourover: { name: 'Pourover', ratio: 16, grind: 24, water: 320 },
+    pourover: { name: 'Pourover', gear: 'Kalita Wave', ratio: 16, grind: 24, water: 320 },
     press: { name: 'French Press', ratio: 15, grind: 34, water: 20 * OZ },
     moka:  { name: 'Moka Pot', grind: 17, fixed: true, water: 300, coffee: 25 },
   };
@@ -304,7 +304,7 @@
     const s = state[id];
     const isDrip = id === 'drip';
 
-    calc.innerHTML = headerHTML(m.name) + grindHTML(m.grind, '', GRIND_TIPS[id]) + sectionHead('Amounts') + `
+    calc.innerHTML = headerHTML(m.name) + grindHTML(m.grind, '', GRIND_TIPS[id]) + sectionHead(m.gear || 'Amounts') + `
       <div class="card">
         ${isDrip ? stepperHTML('cups', 'Carafe cups') : stepperHTML('water', 'Water')}
         ${stepperHTML('coffee', 'Coffee')}
