@@ -193,7 +193,8 @@
 
   // ---- persisted state ----
   const KEY = 'coffee-v1';
-  const GRIND_RATE = 2;        // Encore ESP output, roughly grams per second
+  // Encore ESP output speeds up as the grind gets coarser: ~1.3 g/s at setting 10, ~2.2 g/s at 30 (retailer specs)
+  const grindRate = (setting) => Math.min(2.4, Math.max(1.2, 1.3 + (setting - 10) * 0.045));
   const state = { drip: {}, pourover: {}, press: {} };
   try { Object.assign(state, JSON.parse(localStorage.getItem(KEY)) || {}); } catch (e) {}
   for (const id of ['drip', 'pourover', 'press']) {
@@ -208,7 +209,7 @@
   const fmt = (g, kind) => toInput(g, kind) + 'g';
   const oz = (g, d) => `${round(g / OZ, d)}oz`;
   const cupsText = (g) => { const c = round(g / CUP, 1); return c + (c === 1 ? ' cup' : ' cups'); };
-  const secs = (g) => Math.max(1, Math.round(g / GRIND_RATE));
+  const secs = (g, setting) => Math.max(1, Math.round(g / grindRate(setting)));
 
   document.addEventListener('click', (e) => {
     const go = e.target.closest('[data-go]');
@@ -321,7 +322,7 @@
         $('#sub-ratio').textContent = s.ratio < 14 ? 'Very strong' : s.ratio < 15 ? 'Strong' : s.ratio <= 17 ? 'Standard' : s.ratio <= 18 ? 'Light' : 'Very light';
       }
 
-      $('#grind-detail').textContent = `Grind about ${secs(coffee())}s`;
+      $('#grind-detail').textContent = `Grind about ${secs(coffee(), m.grind)}s`;
       $('#steps').innerHTML = STEPS[id](s.water, coffee()).map(t => `<li>${t}</li>`).join('');
       if (resetTimer) resetTimer();
       save();
@@ -372,7 +373,7 @@
 
   const dripSteps = (water, coffee) => [
     `Fill the reservoir to <strong>${cupsText(water)}</strong> on the carafe (${oz(water, 0)}).`,
-    `Grind <strong>${fmt(coffee, 'coffee')}</strong> on setting <strong>28</strong>, about <strong>${secs(coffee)}s</strong>.`,
+    `Grind <strong>${fmt(coffee, 'coffee')}</strong> on setting <strong>28</strong>, about <strong>${secs(coffee, 28)}s</strong>.`,
     `Put a filter in the basket, add the grounds, and give it a shake to level the bed.`,
     `Start the brew.`,
   ];
@@ -381,7 +382,7 @@
     const bloom = Math.min(water, coffee * 2);
     return [
       `Heat water to ~<strong>200°F</strong> (boil, then wait about 30s).`,
-      `Grind <strong>${fmt(coffee, 'coffee')}</strong> on setting <strong>34</strong> (about ${secs(coffee)}s) and add to the press.`,
+      `Grind <strong>${fmt(coffee, 'coffee')}</strong> on setting <strong>34</strong> (about ${secs(coffee, 34)}s) and add to the press.`,
       `Start the timer. Pour <strong>${fmt(bloom, 'water')}</strong> to bloom, making sure all the grounds are wet. Wait 30s.`,
       `Pour the remaining <strong>${fmt(water - bloom, 'water')}</strong> (total <strong>${fmt(water, 'water')}</strong>). Lid on, plunger up. Steep <strong>4min</strong>.`,
       `Stir to break the crust and skim off the foam. Press slowly (~20s) and pour it all right away so it stops brewing.`,
@@ -399,7 +400,7 @@
     return [
       `Heat water to ~<strong>205°F</strong> (just off the boil).`,
       `Put a Wave filter in the dripper and rinse it with hot water, pouring into the center so the ridges don't flatten. Dump the rinse water.`,
-      `Grind <strong>${fmt(coffee, 'coffee')}</strong> on setting <strong>24</strong> (about ${secs(coffee)}s). Add to the filter and shake it level.`,
+      `Grind <strong>${fmt(coffee, 'coffee')}</strong> on setting <strong>24</strong> (about ${secs(coffee, 24)}s). Add to the filter and shake it level.`,
       `Start the timer. Pour <strong>${fmt(p.bloom, 'water')}</strong> in a slow spiral to wet all the grounds. Wait 45s.`,
       `Pour in slow circles in the middle, keeping off the paper: up to <strong>${fmt(p.p2, 'water')}</strong> at 0:45, <strong>${fmt(p.p3, 'water')}</strong> at 1:15, and <strong>${fmt(p.total, 'water')}</strong> at 1:45. These are totals on the scale.`,
       `Let it drain. It should finish around <strong>3:00–3:30</strong>. Swirl and serve.`,
@@ -504,7 +505,7 @@
   function renderMoka() {
     const m = METHODS.moka;
     calc.innerHTML = headerHTML(m.name)
-      + grindHTML(m.grind, `Grind about ${secs(m.coffee)}s`, `Bitter or sputtering? Go coarser, <b>17–20</b>. Sour or thin? Go finer.`) + `
+      + grindHTML(m.grind, `Grind about ${secs(m.coffee, m.grind)}s`, `Bitter or sputtering? Go coarser, <b>17–20</b>. Sour or thin? Go finer.`) + `
       <h2>6-cup Bialetti Moka Express</h2>
       <div class="card">
         <div class="fixed">
