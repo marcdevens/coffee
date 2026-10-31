@@ -69,13 +69,6 @@
     background: none; border: 0; padding: 8px 8px 8px 0; color: var(--accent); font-weight: 600;
     display: inline-flex; align-items: center; gap: 4px; min-height: 44px;
   }
-  .seg {
-    display: inline-flex; background: var(--surface-2); border-radius: 10px; padding: 3px;
-  }
-  .seg button {
-    border: 0; background: none; padding: 6px 14px; border-radius: 8px; font-size: 15px; font-weight: 600; color: var(--muted);
-  }
-  .seg button[aria-pressed="true"] { background: var(--surface); color: var(--text); box-shadow: var(--shadow); }
 
   /* Picker */
   .methods { display: grid; gap: 12px; }
@@ -112,21 +105,17 @@
   .num .unit { font-size: 17px; color: var(--muted); flex: none; width: 2.2em; }
   .sub { font-size: 14px; color: var(--muted); text-align: center; margin-top: 6px; min-height: 1.2em; }
 
-  .grind { display: flex; align-items: center; gap: 16px; }
+  .grind-card { margin-top: 16px; padding: 12px 14px; }
+  .grind { display: flex; align-items: center; gap: 12px; }
   .grind .big {
-    font: 800 48px/1 ui-rounded, -apple-system, sans-serif; font-variant-numeric: tabular-nums;
-    background: var(--accent); color: var(--accent-ink); border-radius: 16px; min-width: 88px; height: 88px;
+    font: 800 24px/1 ui-rounded, -apple-system, sans-serif; font-variant-numeric: tabular-nums;
+    background: var(--accent); color: var(--accent-ink); border-radius: 12px; width: 48px; height: 48px;
     display: grid; place-items: center; flex: none;
   }
-  .grind .what { font-weight: 700; }
-  .grind .detail { color: var(--muted); font-size: 15px; }
-  .tip { font-size: 14px; color: var(--muted); margin-top: 12px; padding-top: 12px; border-top: 1px solid var(--line); }
+  .grind .what { font-weight: 600; font-size: 16px; }
+  .grind .detail { color: var(--muted); font-size: 14px; }
+  .tip { font-size: 13px; color: var(--muted); margin-top: 10px; padding-top: 10px; border-top: 1px solid var(--line); }
   .tip b { color: var(--text); font-weight: 600; }
-  .rate { display: inline-flex; align-items: center; gap: 4px; }
-  .rate input {
-    width: 3.2em; border: 1px solid var(--line); border-radius: 8px; background: var(--bg);
-    padding: 2px 6px; text-align: center; font-size: 15px;
-  }
 
   ol.steps { list-style: none; counter-reset: s; margin: 0; padding: 0; }
   ol.steps li { counter-increment: s; position: relative; padding: 0 0 0 44px; min-height: 30px; }
@@ -169,11 +158,6 @@
         <span class="name">Drip</span>
         <span class="chev" aria-hidden="true">›</span>
       </button>
-      <button class="method" data-go="kalita">
-        <span class="ico" aria-hidden="true"><svg viewBox="0 0 24 24"><path d="M4.75 3.75h14.5l-3 7.5h-8.5z"/><path d="M9.5 6.25l.75 2.5m4.25-2.5l-.75 2.5"/><path d="M5.75 13.25h12.5"/><path d="M7.25 13.25v4.5a3 3 0 0 0 3 3h3.5a3 3 0 0 0 3-3v-4.5m0 1.5h.75a1.75 1.75 0 0 1 0 3.5h-.75"/></svg></span>
-        <span class="name">Kalita Wave</span>
-        <span class="chev" aria-hidden="true">›</span>
-      </button>
       <button class="method" data-go="press">
         <span class="ico" aria-hidden="true"><svg viewBox="0 0 24 24"><path d="M8.5 2.75H13m-2.25 0v4.5"/><rect width="11" height="14" x="5.25" y="7.25" rx="2"/><path d="M5.25 12.5h11m0-2.75h2a2 2 0 0 1 2 2v4.5a2 2 0 0 1-2 2h-2"/></svg></span>
         <span class="name">French Press</span>
@@ -182,6 +166,11 @@
       <button class="method" data-go="moka">
         <span class="ico" aria-hidden="true"><svg viewBox="0 0 24 24"><path d="M10.5 2.75h3m-5.25 3h7.5q1 0 .78.97l-1.06 4.56q-.22.97-.06 1.96l1.18 7.02q.16.99-.84.99h-7.5q-1 0-.84-.99l1.18-7.02q.16-.99-.06-1.96L7.47 6.72q-.22-.97.78-.97m.5 6.5h6.5"/><path d="M16.4 7.25h2.85L18 12.75M7.6 7.25l-2.35-1.5"/></svg></span>
         <span class="name">Moka Pot</span>
+        <span class="chev" aria-hidden="true">›</span>
+      </button>
+      <button class="method" data-go="pourover">
+        <span class="ico" aria-hidden="true"><svg viewBox="0 0 24 24"><path d="M4.75 3.75h14.5l-3 7.5h-8.5z"/><path d="M9.5 6.25l.75 2.5m4.25-2.5l-.75 2.5"/><path d="M5.75 13.25h12.5"/><path d="M7.25 13.25v4.5a3 3 0 0 0 3 3h3.5a3 3 0 0 0 3-3v-4.5m0 1.5h.75a1.75 1.75 0 0 1 0 3.5h-.75"/></svg></span>
+        <span class="name">Pourover</span>
         <span class="chev" aria-hidden="true">›</span>
       </button>
     </div>
@@ -197,42 +186,31 @@
 
   const METHODS = {
     drip:  { name: 'Drip', ratio: 16, grind: 28, water: 4 * CUP },
-    kalita: { name: 'Kalita Wave', ratio: 16, grind: 24, water: 320 },
+    pourover: { name: 'Pourover', ratio: 16, grind: 24, water: 320 },
     press: { name: 'French Press', ratio: 15, grind: 34, water: 20 * OZ },
     moka:  { name: 'Moka Pot', grind: 15, fixed: true, water: 300, coffee: 25 },
   };
 
   // ---- persisted state ----
   const KEY = 'coffee-v1';
-  const state = { unit: 'g', gps: 2.0, drip: {}, kalita: {}, press: {} };
+  const GRIND_RATE = 2;        // Encore ESP output, roughly grams per second
+  const state = { drip: {}, pourover: {}, press: {} };
   try { Object.assign(state, JSON.parse(localStorage.getItem(KEY)) || {}); } catch (e) {}
-  for (const id of ['drip', 'kalita', 'press']) {
+  for (const id of ['drip', 'pourover', 'press']) {
     state[id] = Object.assign({ water: METHODS[id].water, ratio: METHODS[id].ratio }, state[id]);
   }
   const save = () => { try { localStorage.setItem(KEY, JSON.stringify(state)); } catch (e) {} };
 
   // ---- formatting ----
   const round = (n, d) => { const f = 10 ** d; return Math.round(n * f) / f; };
-  const isOz = () => state.unit === 'oz';
-  // value shown in an input, in the current unit
-  const toInput = (g, kind) => isOz()
-    ? String(round(g / OZ, kind === 'water' ? 1 : 2))
-    : String(round(g, kind === 'water' ? 0 : 1));
-  // text with unit, for steps
-  const fmt = (g, kind) => toInput(g, kind) + (isOz() ? ' oz' : ' g');
-  const fromInput = (v) => {
-    const n = parseFloat(String(v).replace(',', '.'));
-    return isFinite(n) && n > 0 ? (isOz() ? n * OZ : n) : null;
-  };
+  // grams everywhere, with ounces as the secondary readout
+  const toInput = (g, kind) => String(round(g, kind === 'water' ? 0 : 1));
+  const fmt = (g, kind) => toInput(g, kind) + ' g';
+  const oz = (g, d) => `${round(g / OZ, d)} oz`;
   const cupsText = (g) => { const c = round(g / CUP, 1); return c + (c === 1 ? ' cup' : ' cups'); };
-  const secs = (g) => Math.max(1, Math.round(g / state.gps));
+  const secs = (g) => Math.max(1, Math.round(g / GRIND_RATE));
 
-  // ---- units toggle ----
-  const syncUnitButtons = () => document.querySelectorAll('[data-unit]').forEach(b =>
-    b.setAttribute('aria-pressed', String(b.dataset.unit === state.unit)));
   document.addEventListener('click', (e) => {
-    const u = e.target.closest('[data-unit]');
-    if (u) { state.unit = u.dataset.unit; save(); syncUnitButtons(); route(); return; }
     const go = e.target.closest('[data-go]');
     if (go) { cameFromHome = true; location.hash = go.dataset.go; }
   });
@@ -245,11 +223,10 @@
   function route() {
     if (cleanup) { cleanup(); cleanup = null; }
     const id = location.hash.slice(1);
-    if (!METHODS[id]) { cameFromHome = false; calc.hidden = true; home.hidden = false; document.title = 'Coffee'; syncUnitButtons(); return; }
+    if (!METHODS[id]) { cameFromHome = false; calc.hidden = true; home.hidden = false; document.title = 'Coffee'; return; }
     home.hidden = true; calc.hidden = false;
     document.title = METHODS[id].name + ' · Coffee';
     if (id === 'moka') renderMoka(); else renderCalc(id);
-    syncUnitButtons();
     window.scrollTo(0, 0);
   }
   window.addEventListener('hashchange', route);
@@ -257,12 +234,20 @@
   const headerHTML = (name) => `
     <header>
       <button class="back" type="button" data-back>‹ Methods</button>
-      <div class="seg" role="group" aria-label="Units">
-        <button type="button" data-unit="g">g</button>
-        <button type="button" data-unit="oz">oz</button>
-      </div>
     </header>
     <h1>${name}</h1>`;
+
+  const grindHTML = (setting, detail, tip) => `
+    <div class="card grind-card">
+      <div class="grind">
+        <div class="big">${setting}</div>
+        <div>
+          <div class="what">Grinder setting</div>
+          <div class="detail" id="grind-detail">${detail}</div>
+        </div>
+      </div>
+      <div class="tip">${tip}</div>
+    </div>`;
   calc.addEventListener('click', (e) => {
     // go back if we got here from the picker, otherwise (opened directly on #drip) just clear the hash
     if (e.target.closest('[data-back]')) cameFromHome ? history.back() : (location.hash = '');
@@ -288,25 +273,12 @@
     const s = state[id];
     const isDrip = id === 'drip';
 
-    calc.innerHTML = headerHTML(m.name) + `
+    calc.innerHTML = headerHTML(m.name) + grindHTML(m.grind, '', GRIND_TIPS[id]) + `
       <h2>Amounts</h2>
       <div class="card">
-        ${isDrip ? stepperHTML('cups', 'Carafe cups') : ''}
-        ${stepperHTML('water', 'Water')}
-        ${stepperHTML('coffee', 'Coffee')}
-        ${stepperHTML('ratio', 'Ratio (water per 1 coffee)')}
-      </div>
-
-      <h2>Grind</h2>
-      <div class="card">
-        <div class="grind">
-          <div class="big">${m.grind}</div>
-          <div>
-            <div class="what">Encore ESP setting ${m.grind}</div>
-            <div class="detail" id="grind-detail"></div>
-          </div>
-        </div>
-        <div class="tip">${GRIND_TIPS[id]}</div>
+        ${isDrip
+          ? stepperHTML('cups', 'Carafe cups') + stepperHTML('coffee', 'Coffee')
+          : stepperHTML('water', 'Water') + stepperHTML('coffee', 'Coffee') + stepperHTML('ratio', 'Ratio (water per 1 coffee)')}
       </div>
 
       ${isDrip ? '' : `
@@ -340,18 +312,16 @@
       for (const k in inputs) if (inputs[k] && k !== except) inputs[k].value = val[k]();
       calc.querySelectorAll('[data-unit-label]').forEach(el => {
         const k = el.dataset.unitLabel;
-        el.textContent = k === 'ratio' ? '' : k === 'cups' ? 'cups' : state.unit;
+        el.textContent = k === 'ratio' ? '' : k === 'cups' ? 'cups' : 'g';
       });
-      $('#sub-water').textContent = isOz()
-        ? `${round(s.water, 0)} g`
-        : `${round(s.water / OZ, 1)} oz`;
-      $('#sub-coffee').textContent = isOz() ? `${round(coffee(), 1)} g` : `${round(coffee() / OZ, 2)} oz`;
-      if (isDrip) $('#sub-cups').textContent = '1 carafe cup = 5 oz water';
-      $('#sub-ratio').textContent = s.ratio < 14 ? 'Very strong' : s.ratio < 15 ? 'Strong' : s.ratio <= 17 ? 'Standard' : s.ratio <= 18 ? 'Light' : 'Very light';
+      $('#sub-coffee').textContent = oz(coffee(), 2);
+      if (isDrip) $('#sub-cups').textContent = `${oz(s.water, 0)} water`;
+      else {
+        $('#sub-water').textContent = oz(s.water, 1);
+        $('#sub-ratio').textContent = s.ratio < 14 ? 'Very strong' : s.ratio < 15 ? 'Strong' : s.ratio <= 17 ? 'Standard' : s.ratio <= 18 ? 'Light' : 'Very light';
+      }
 
-      $('#grind-detail').textContent = isDrip
-        ? `Grind ~${secs(coffee())} s for ${fmt(coffee(), 'coffee')}`
-        : `${id === 'press' ? 'Coarse' : 'Medium-fine'} · ${fmt(coffee(), 'coffee')}`;
+      $('#grind-detail').textContent = `Grind about ${secs(coffee())} s`;
       $('#steps').innerHTML = STEPS[id](s.water, coffee()).map(t => `<li>${t}</li>`).join('');
       if (resetTimer) resetTimer();
       save();
@@ -372,7 +342,7 @@
       el.addEventListener('input', () => {
         const raw = parseFloat(el.value.replace(',', '.'));
         if (!(raw > 0)) return;
-        set(k, k === 'ratio' || k === 'cups' ? raw : fromInput(el.value));
+        set(k, raw);
         paint(k);
       });
       el.addEventListener('blur', () => paint());
@@ -384,25 +354,10 @@
       const k = b.dataset.step, dir = +b.dataset.dir;
       if (k === 'cups') set('cups', Math.max(1, Math.round(s.water / CUP) + dir));
       else if (k === 'ratio') set('ratio', round(s.ratio + dir * 0.5, 1));
-      else if (k === 'water') {
-        const step = isOz() ? OZ : 25;
-        set('water', (Math.round(s.water / step) + dir) * step);
-      } else if (k === 'coffee') {
-        const step = isOz() ? OZ / 10 : 1;
-        set('coffee', Math.max(step, (Math.round(coffee() / step) + dir) * step));
-      }
+      else if (k === 'water') set('water', (Math.round(s.water / 25) + dir) * 25);
+      else if (k === 'coffee') set('coffee', Math.max(1, Math.round(coffee()) + dir));
       paint();
     }));
-
-    const gps = $('#gps');
-    if (gps) {
-      gps.value = state.gps;
-      gps.addEventListener('input', () => {
-        const n = parseFloat(gps.value.replace(',', '.'));
-        if (n > 0.2 && n < 10) { state.gps = n; paint(); }
-      });
-      gps.addEventListener('focus', () => gps.select());
-    }
 
     let resetTimer = null;
     if (!isDrip) ({ cleanup, refresh: resetTimer } = setupTimer(() => TIMERS[id](s.water, coffee())));
@@ -410,13 +365,13 @@
   }
 
   const GRIND_TIPS = {
-    drip: `Grind time assumes the grinder puts out <span class="rate"><input id="gps" inputmode="decimal" aria-label="Grams per second"> g/s</span>. Weigh one grind to check yours. Cone filter? Try <b>24–26</b>.`,
-    kalita: `Draining past ~3:30 or tastes bitter? Go coarser, <b>26–27</b>. Done before 3:00 or tastes sour? Go finer, <b>21–22</b>.`,
+    drip: `Cone filter? Try <b>24–26</b>.`,
+    pourover: `Draining past ~3:30 or tastes bitter? Go coarser, <b>26–27</b>. Done before 3:00 or tastes sour? Go finer, <b>21–22</b>.`,
     press: `Muddy or silty cup? Go coarser, <b>36–38</b>. Thin or sour? Try <b>32</b>.`,
   };
 
   const dripSteps = (water, coffee) => [
-    `Fill the reservoir with <strong>${fmt(water, 'water')}</strong> of water (<strong>${cupsText(water)}</strong> on the carafe).`,
+    `Fill the reservoir to <strong>${cupsText(water)}</strong> on the carafe (${oz(water, 0)}).`,
     `Grind <strong>${fmt(coffee, 'coffee')}</strong> on setting <strong>28</strong>, about <strong>${secs(coffee)} s</strong>.`,
     `Put a filter in the basket, add the grounds, and give it a shake to level the bed.`,
     `Start the brew. Serve within ~20 min; the hot plate stews it after that.`,
@@ -426,32 +381,32 @@
     const bloom = Math.min(water, coffee * 2);
     return [
       `Heat water to ~<strong>200°F</strong> (boil, then wait about 30 s).`,
-      `Grind <strong>${fmt(coffee, 'coffee')}</strong> on setting <strong>34</strong> and add to the press.`,
+      `Grind <strong>${fmt(coffee, 'coffee')}</strong> on setting <strong>34</strong> (about ${secs(coffee)} s) and add to the press.`,
       `Start the timer. Pour <strong>${fmt(bloom, 'water')}</strong> to bloom, making sure all the grounds are wet. Wait 30 s.`,
       `Pour the remaining <strong>${fmt(water - bloom, 'water')}</strong> (total <strong>${fmt(water, 'water')}</strong>). Lid on, plunger up. Steep <strong>4 min</strong>.`,
       `Stir to break the crust and skim off the foam. Press slowly (~20 s) and pour it all right away so it stops brewing.`,
     ];
   };
 
-  // Kalita pours: bloom at 2.5× coffee, then pulse to ~45%, ~70% and 100% of the water
-  const kalitaPours = (water, coffee) => {
+  // Pourover (Kalita Wave) pours: bloom at 2.5× coffee, then pulse to ~45%, ~70% and 100% of the water
+  const pouroverPours = (water, coffee) => {
     const bloom = Math.min(water, coffee * 2.5);
     return { bloom, p2: Math.max(bloom, water * 0.45), p3: water * 0.7, total: water };
   };
 
-  const kalitaSteps = (water, coffee) => {
-    const p = kalitaPours(water, coffee);
+  const pouroverSteps = (water, coffee) => {
+    const p = pouroverPours(water, coffee);
     return [
       `Heat water to ~<strong>205°F</strong> (just off the boil).`,
       `Put a Wave filter in the dripper and rinse it with hot water, pouring into the center so the ridges don't flatten. Dump the rinse water.`,
-      `Grind <strong>${fmt(coffee, 'coffee')}</strong> on setting <strong>24</strong>. Add to the filter and shake it level.`,
+      `Grind <strong>${fmt(coffee, 'coffee')}</strong> on setting <strong>24</strong> (about ${secs(coffee)} s). Add to the filter and shake it level.`,
       `Start the timer. Pour <strong>${fmt(p.bloom, 'water')}</strong> in a slow spiral to wet all the grounds. Wait 45 s.`,
       `Pour in slow circles in the middle, keeping off the paper: up to <strong>${fmt(p.p2, 'water')}</strong> at 0:45, <strong>${fmt(p.p3, 'water')}</strong> at 1:15, and <strong>${fmt(p.total, 'water')}</strong> at 1:45. These are totals on the scale.`,
       `Let it drain. It should finish around <strong>3:00–3:30</strong>. Swirl and serve.`,
     ];
   };
 
-  const STEPS = { drip: dripSteps, kalita: kalitaSteps, press: pressSteps };
+  const STEPS = { drip: dripSteps, pourover: pouroverSteps, press: pressSteps };
 
   const TIMERS = {
     press: () => ({
@@ -462,8 +417,8 @@
       ],
       done: ['Press', 'Stir, skim, press slowly, and pour'],
     }),
-    kalita: (water, coffee) => {
-      const p = kalitaPours(water, coffee);
+    pourover: (water, coffee) => {
+      const p = pouroverPours(water, coffee);
       return {
         idle: `Bloom, three pours, then drain · ~3:30`,
         phases: [
@@ -478,7 +433,7 @@
     },
   };
 
-  // ---- brew timer (French press, Kalita) ----
+  // ---- brew timer (French press, pourover) ----
   function setupTimer(getPlan) {
     let plan = getPlan();
     let PHASES = plan.phases;
@@ -548,27 +503,15 @@
   // ---- moka pot (amounts fixed by the pot) ----
   function renderMoka() {
     const m = METHODS.moka;
-    const water = isOz() ? `${round(m.water / OZ, 1)} oz` : `${m.water} ml`;
-    calc.innerHTML = headerHTML(m.name) + `
+    calc.innerHTML = headerHTML(m.name)
+      + grindHTML(m.grind, `Grind about ${secs(m.coffee)} s`, `Bitter or sputtering? Go coarser, <b>17–20</b>. Sour or thin? Go finer.`) + `
       <h2>6-cup Bialetti Moka Express</h2>
       <div class="card">
         <div class="fixed">
-          <div><div class="v">~${water}</div><div class="k">Water, to just under the valve</div></div>
+          <div><div class="v">~${m.water} ml</div><div class="k">Water, to just under the valve</div></div>
           <div><div class="v">~${fmt(m.coffee, 'coffee')}</div><div class="k">Coffee, a full level basket</div></div>
         </div>
-        <div class="tip">The pot sets the amounts, so there's nothing to calculate. Makes ~${isOz() ? round(240 / OZ, 0) + ' oz' : '240 ml'}. Don't under-fill the basket to make less; it brews unevenly.</div>
-      </div>
-
-      <h2>Grind</h2>
-      <div class="card">
-        <div class="grind">
-          <div class="big">${m.grind}</div>
-          <div>
-            <div class="what">Encore ESP setting ${m.grind}</div>
-            <div class="detail">Fine, a bit coarser than espresso</div>
-          </div>
-        </div>
-        <div class="tip">Bitter or sputtering? Go coarser, <b>17–20</b>. Sour or thin? Go finer.</div>
+        <div class="tip">The pot sets the amounts, so there's nothing to calculate. Makes ~240 ml. Don't under-fill the basket to make less; it brews unevenly.</div>
       </div>
 
       <h2>Steps</h2>
