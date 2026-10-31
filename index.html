@@ -222,8 +222,16 @@
 
   // ---- persisted state ----
   const KEY = 'coffee-v1';
-  // Encore ESP output speeds up as the grind gets coarser: ~1.3 g/s at setting 10, ~2.2 g/s at 30 (retailer specs)
-  const grindRate = (setting) => Math.min(2.4, Math.max(1.2, 1.3 + (setting - 10) * 0.045));
+  // Grind speed (g/s) weighed on this Encore ESP, by setting. Add a setting here after weighing a timed grind.
+  const MEASURED_RATE = {
+    34: 31 / 9,   // 31g in 9s (2026-10-31)
+  };
+  // Retailer specs (~1.3 g/s at setting 10, ~2.2 at 30) give the shape of the curve: faster as the grind gets coarser.
+  const specRate = (setting) => 1.3 + (setting - 10) * 0.045;
+  // The real grinder runs faster than the specs, so scale the spec curve by the measured/spec ratio.
+  const measured = Object.entries(MEASURED_RATE);
+  const RATE_SCALE = measured.reduce((sum, [s, r]) => sum + r / specRate(+s), 0) / measured.length;
+  const grindRate = (setting) => MEASURED_RATE[setting] ?? specRate(setting) * RATE_SCALE;
   const state = { unit: 'g', drip: {}, pourover: {}, press: {} };
   try { Object.assign(state, JSON.parse(localStorage.getItem(KEY)) || {}); } catch (e) {}
   for (const id of ['drip', 'pourover', 'press']) {
