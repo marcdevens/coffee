@@ -6,8 +6,8 @@
 <meta name="robots" content="noindex, nofollow, noarchive, nosnippet">
 <meta name="googlebot" content="noindex, nofollow">
 <meta name="referrer" content="no-referrer">
-<meta name="theme-color" content="#f6efe6" media="(prefers-color-scheme: light)">
-<meta name="theme-color" content="#1b1512" media="(prefers-color-scheme: dark)">
+<meta name="theme-color" content="#f7f7f5" media="(prefers-color-scheme: light)">
+<meta name="theme-color" content="#121412" media="(prefers-color-scheme: dark)">
 <meta name="apple-mobile-web-app-capable" content="yes">
 <meta name="mobile-web-app-capable" content="yes">
 <meta name="apple-mobile-web-app-status-bar-style" content="default">
@@ -16,30 +16,37 @@
 <link rel="icon" href="icon.svg" type="image/svg+xml">
 <link rel="apple-touch-icon" href="apple-touch-icon.png">
 <link rel="manifest" href="manifest.webmanifest">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Manrope:wght@400;600;700;800&display=swap">
 <style>
   :root {
-    --bg: #f6efe6;
-    --surface: #fffaf4;
-    --surface-2: #efe4d6;
-    --text: #2a1d16;
-    --muted: #7a6656;
-    --line: #e2d4c3;
-    --accent: #8a4b2a;
-    --accent-ink: #fffaf4;
-    --accent-soft: #f1dccb;
-    --shadow: 0 1px 2px rgba(60, 35, 20, .06), 0 4px 16px rgba(60, 35, 20, .06);
+    --bg: #f7f7f5;
+    --surface: #ffffff;
+    --surface-2: #eef0ec;
+    --text: #1e1f1c;
+    --muted: #73766f;
+    --line: #e7e7e2;
+    --accent: #4f6b5c;         /* sage: icons, steppers, links, timer cues */
+    --accent-ink: #ffffff;
+    --accent-soft: #eef0ec;
+    --strong: #1e1f1c;         /* charcoal: grinder badge, primary button */
+    --strong-ink: #f7f7f5;
+    --shadow: 0 1px 2px rgba(30, 31, 28, .04);
   }
   @media (prefers-color-scheme: dark) {
     :root {
-      --bg: #1b1512;
-      --surface: #261e1a;
-      --surface-2: #31261f;
-      --text: #f3e9df;
-      --muted: #b09d8d;
-      --line: #3d3029;
-      --accent: #e0a073;
-      --accent-ink: #1b1512;
-      --accent-soft: #3d2a1f;
+      --bg: #121412;
+      --surface: #1b1d1b;
+      --surface-2: #262926;
+      --text: #ecede9;
+      --muted: #9a9d96;
+      --line: #2c2f2c;
+      --accent: #8fb3a0;
+      --accent-ink: #121412;
+      --accent-soft: #243029;
+      --strong: #ecede9;
+      --strong-ink: #121412;
       --shadow: none;
     }
   }
@@ -49,7 +56,7 @@
     margin: 0;
     background: var(--bg);
     color: var(--text);
-    font: 17px/1.45 -apple-system, BlinkMacSystemFont, "SF Pro Text", "Segoe UI", Roboto, sans-serif;
+    font: 17px/1.45 Manrope, -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
     -webkit-font-smoothing: antialiased;
   }
   button, input { font: inherit; color: inherit; }
@@ -63,8 +70,8 @@
     display: flex; align-items: center; justify-content: space-between; gap: 12px;
     min-height: 48px; margin-bottom: 12px;
   }
-  h1 { font: 700 26px/1.1 ui-serif, "New York", Georgia, serif; margin: 0; letter-spacing: -.01em; }
-  h2 { font-size: 13px; font-weight: 600; text-transform: uppercase; letter-spacing: .06em; color: var(--muted); margin: 24px 4px 8px; }
+  h1 { font-size: 28px; font-weight: 800; line-height: 1.1; margin: 0; letter-spacing: -.02em; }
+  h2 { font-size: 12px; font-weight: 700; text-transform: uppercase; letter-spacing: .06em; color: var(--muted); margin: 24px 4px 8px; }
   .back {
     background: none; border: 0; padding: 8px 8px 8px 0; color: var(--accent); font-weight: 600;
     display: inline-flex; align-items: center; gap: 4px; min-height: 44px;
@@ -100,7 +107,7 @@
   }
   .num input {
     width: 100%; min-width: 0; border: 0; background: none; text-align: right; outline: none;
-    font-size: 30px; font-weight: 700; font-variant-numeric: tabular-nums; padding: 0; height: 56px;
+    font-size: 30px; font-weight: 800; font-variant-numeric: tabular-nums; padding: 0; height: 56px;
   }
   .num .unit { font-size: 17px; color: var(--muted); flex: none; width: 2.2em; }
   .section-head { display: flex; align-items: center; justify-content: space-between; margin: 20px 4px 8px; }
@@ -112,17 +119,17 @@
   .grind-card { margin-top: 16px; padding: 12px 14px; }
   .grind { display: flex; align-items: center; gap: 12px; }
   .grind .big {
-    font: 800 24px/1 ui-rounded, -apple-system, sans-serif; font-variant-numeric: tabular-nums;
-    background: var(--accent); color: var(--accent-ink); border-radius: 12px; width: 48px; height: 48px;
+    font-size: 22px; font-weight: 800; line-height: 1; font-variant-numeric: tabular-nums;
+    background: var(--strong); color: var(--strong-ink); border-radius: 12px; width: 48px; height: 48px;
     display: grid; place-items: center; flex: none;
   }
-  .grind .what { font-weight: 600; font-size: 16px; }
+  .grind .what { font-weight: 700; font-size: 16px; }
   .grind .detail { color: var(--muted); font-size: 14px; }
   .grind-go {
     margin-left: auto; flex: none; min-width: 84px; height: 44px; border-radius: 12px; border: 0;
-    background: var(--surface-2); color: var(--accent); font-weight: 700; font-size: 16px; font-variant-numeric: tabular-nums;
+    background: var(--surface-2); color: var(--text); font-weight: 700; font-size: 16px; font-variant-numeric: tabular-nums;
   }
-  .grind-go.running { background: var(--accent); color: var(--accent-ink); }
+  .grind-go.running { background: var(--strong); color: var(--strong-ink); }
   .grind-go.done { background: var(--accent-soft); }
   .grind-go.cue { animation: cue-btn 1.6s ease-in-out; }
   .tip { font-size: 13px; color: var(--muted); margin-top: 10px; padding-top: 10px; border-top: 1px solid var(--line); }
@@ -138,12 +145,12 @@
   ol.steps strong { font-variant-numeric: tabular-nums; }
 
   .fixed { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; text-align: center; }
-  .fixed .v { font-size: 28px; font-weight: 700; font-variant-numeric: tabular-nums; }
+  .fixed .v { font-size: 28px; font-weight: 800; font-variant-numeric: tabular-nums; }
   .fixed .k { font-size: 14px; color: var(--muted); font-weight: 600; }
 
   .timer { text-align: center; }
   .timer .phase { --fg: var(--accent); font-size: 17px; font-weight: 700; color: var(--fg); }
-  .timer .clock { --fg: var(--text); font: 800 64px/1.1 ui-rounded, -apple-system, sans-serif; font-variant-numeric: tabular-nums; margin: 4px 0; color: var(--fg); }
+  .timer .clock { --fg: var(--text); font-size: 64px; font-weight: 800; line-height: 1.1; letter-spacing: -.02em; font-variant-numeric: tabular-nums; margin: 4px 0; color: var(--fg); }
   .timer .next { --fg: var(--muted); color: var(--fg); font-size: 15px; min-height: 1.4em; }
   .timer.alert .clock, .timer.alert .phase { --fg: var(--accent); }
 
@@ -158,7 +165,7 @@
   }
   .btn {
     width: 100%; height: 52px; border-radius: 14px; border: 0; margin-top: 14px;
-    background: var(--accent); color: var(--accent-ink); font-weight: 700; font-size: 17px;
+    background: var(--strong); color: var(--strong-ink); font-weight: 700; font-size: 17px;
   }
   .btn.secondary { background: var(--surface-2); color: var(--text); }
   .row { display: flex; gap: 10px; }
