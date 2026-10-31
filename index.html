@@ -103,7 +103,7 @@
     font-size: 30px; font-weight: 700; font-variant-numeric: tabular-nums; padding: 0; height: 56px;
   }
   .num .unit { font-size: 17px; color: var(--muted); flex: none; width: 2.2em; }
-  .sub { font-size: 14px; color: var(--muted); text-align: center; margin-top: 6px; min-height: 1.2em; }
+  .sub { font-size: 14px; color: var(--muted); text-align: right; padding-right: 68px; margin-top: 6px; min-height: 1.2em; }
 
   .grind-card { margin-top: 16px; padding: 12px 14px; }
   .grind { display: flex; align-items: center; gap: 12px; }
@@ -205,8 +205,8 @@
   const round = (n, d) => { const f = 10 ** d; return Math.round(n * f) / f; };
   // grams everywhere, with ounces as the secondary readout
   const toInput = (g, kind) => String(round(g, kind === 'water' ? 0 : 1));
-  const fmt = (g, kind) => toInput(g, kind) + ' g';
-  const oz = (g, d) => `${round(g / OZ, d)} oz`;
+  const fmt = (g, kind) => toInput(g, kind) + 'g';
+  const oz = (g, d) => `${round(g / OZ, d)}oz`;
   const cupsText = (g) => { const c = round(g / CUP, 1); return c + (c === 1 ? ' cup' : ' cups'); };
   const secs = (g) => Math.max(1, Math.round(g / GRIND_RATE));
 
@@ -286,7 +286,7 @@
       <div class="card timer" id="timer">
         <div class="phase" id="t-phase">Ready</div>
         <div class="clock" id="t-clock">0:30</div>
-        <div class="next" id="t-next">30 s bloom, then 4 min steep</div>
+        <div class="next" id="t-next">30s bloom, then 4min steep</div>
         <div class="row">
           <button class="btn" type="button" id="t-start">Start</button>
           <button class="btn secondary" type="button" id="t-reset" hidden>Reset</button>
@@ -321,7 +321,7 @@
         $('#sub-ratio').textContent = s.ratio < 14 ? 'Very strong' : s.ratio < 15 ? 'Strong' : s.ratio <= 17 ? 'Standard' : s.ratio <= 18 ? 'Light' : 'Very light';
       }
 
-      $('#grind-detail').textContent = `Grind about ${secs(coffee())} s`;
+      $('#grind-detail').textContent = `Grind about ${secs(coffee())}s`;
       $('#steps').innerHTML = STEPS[id](s.water, coffee()).map(t => `<li>${t}</li>`).join('');
       if (resetTimer) resetTimer();
       save();
@@ -372,19 +372,19 @@
 
   const dripSteps = (water, coffee) => [
     `Fill the reservoir to <strong>${cupsText(water)}</strong> on the carafe (${oz(water, 0)}).`,
-    `Grind <strong>${fmt(coffee, 'coffee')}</strong> on setting <strong>28</strong>, about <strong>${secs(coffee)} s</strong>.`,
+    `Grind <strong>${fmt(coffee, 'coffee')}</strong> on setting <strong>28</strong>, about <strong>${secs(coffee)}s</strong>.`,
     `Put a filter in the basket, add the grounds, and give it a shake to level the bed.`,
-    `Start the brew. Serve within ~20 min; the hot plate stews it after that.`,
+    `Start the brew.`,
   ];
 
   const pressSteps = (water, coffee) => {
     const bloom = Math.min(water, coffee * 2);
     return [
-      `Heat water to ~<strong>200°F</strong> (boil, then wait about 30 s).`,
-      `Grind <strong>${fmt(coffee, 'coffee')}</strong> on setting <strong>34</strong> (about ${secs(coffee)} s) and add to the press.`,
-      `Start the timer. Pour <strong>${fmt(bloom, 'water')}</strong> to bloom, making sure all the grounds are wet. Wait 30 s.`,
-      `Pour the remaining <strong>${fmt(water - bloom, 'water')}</strong> (total <strong>${fmt(water, 'water')}</strong>). Lid on, plunger up. Steep <strong>4 min</strong>.`,
-      `Stir to break the crust and skim off the foam. Press slowly (~20 s) and pour it all right away so it stops brewing.`,
+      `Heat water to ~<strong>200°F</strong> (boil, then wait about 30s).`,
+      `Grind <strong>${fmt(coffee, 'coffee')}</strong> on setting <strong>34</strong> (about ${secs(coffee)}s) and add to the press.`,
+      `Start the timer. Pour <strong>${fmt(bloom, 'water')}</strong> to bloom, making sure all the grounds are wet. Wait 30s.`,
+      `Pour the remaining <strong>${fmt(water - bloom, 'water')}</strong> (total <strong>${fmt(water, 'water')}</strong>). Lid on, plunger up. Steep <strong>4min</strong>.`,
+      `Stir to break the crust and skim off the foam. Press slowly (~20s) and pour it all right away so it stops brewing.`,
     ];
   };
 
@@ -399,8 +399,8 @@
     return [
       `Heat water to ~<strong>205°F</strong> (just off the boil).`,
       `Put a Wave filter in the dripper and rinse it with hot water, pouring into the center so the ridges don't flatten. Dump the rinse water.`,
-      `Grind <strong>${fmt(coffee, 'coffee')}</strong> on setting <strong>24</strong> (about ${secs(coffee)} s). Add to the filter and shake it level.`,
-      `Start the timer. Pour <strong>${fmt(p.bloom, 'water')}</strong> in a slow spiral to wet all the grounds. Wait 45 s.`,
+      `Grind <strong>${fmt(coffee, 'coffee')}</strong> on setting <strong>24</strong> (about ${secs(coffee)}s). Add to the filter and shake it level.`,
+      `Start the timer. Pour <strong>${fmt(p.bloom, 'water')}</strong> in a slow spiral to wet all the grounds. Wait 45s.`,
       `Pour in slow circles in the middle, keeping off the paper: up to <strong>${fmt(p.p2, 'water')}</strong> at 0:45, <strong>${fmt(p.p3, 'water')}</strong> at 1:15, and <strong>${fmt(p.total, 'water')}</strong> at 1:45. These are totals on the scale.`,
       `Let it drain. It should finish around <strong>3:00–3:30</strong>. Swirl and serve.`,
     ];
@@ -410,7 +410,7 @@
 
   const TIMERS = {
     press: () => ({
-      idle: '30 s bloom, then 4 min steep',
+      idle: '30s bloom, then 4min steep',
       phases: [
         { label: 'Bloom', secs: 30, next: 'Then pour the rest of the water' },
         { label: 'Steep', secs: 240, next: 'Then stir, skim and press' },
@@ -504,14 +504,14 @@
   function renderMoka() {
     const m = METHODS.moka;
     calc.innerHTML = headerHTML(m.name)
-      + grindHTML(m.grind, `Grind about ${secs(m.coffee)} s`, `Bitter or sputtering? Go coarser, <b>17–20</b>. Sour or thin? Go finer.`) + `
+      + grindHTML(m.grind, `Grind about ${secs(m.coffee)}s`, `Bitter or sputtering? Go coarser, <b>17–20</b>. Sour or thin? Go finer.`) + `
       <h2>6-cup Bialetti Moka Express</h2>
       <div class="card">
         <div class="fixed">
-          <div><div class="v">~${m.water} ml</div><div class="k">Water, to just under the valve</div></div>
+          <div><div class="v">~${m.water}ml</div><div class="k">Water, to just under the valve</div></div>
           <div><div class="v">~${fmt(m.coffee, 'coffee')}</div><div class="k">Coffee, a full level basket</div></div>
         </div>
-        <div class="tip">The pot sets the amounts, so there's nothing to calculate. Makes ~240 ml. Don't under-fill the basket to make less; it brews unevenly.</div>
+        <div class="tip">The pot sets the amounts, so there's nothing to calculate. Makes ~240ml. Don't under-fill the basket to make less; it brews unevenly.</div>
       </div>
 
       <h2>Steps</h2>
