@@ -1,0 +1,532 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<meta name="robots" content="noindex, nofollow, noarchive, nosnippet">
+<meta name="googlebot" content="noindex, nofollow">
+<meta name="referrer" content="no-referrer">
+<meta name="theme-color" content="#f6efe6" media="(prefers-color-scheme: light)">
+<meta name="theme-color" content="#1b1512" media="(prefers-color-scheme: dark)">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="default">
+<meta name="apple-mobile-web-app-title" content="Coffee">
+<title>Coffee</title>
+<link rel="icon" href="icon.svg" type="image/svg+xml">
+<link rel="apple-touch-icon" href="apple-touch-icon.png">
+<link rel="manifest" href="manifest.webmanifest">
+<style>
+  :root {
+    --bg: #f6efe6;
+    --surface: #fffaf4;
+    --surface-2: #efe4d6;
+    --text: #2a1d16;
+    --muted: #7a6656;
+    --line: #e2d4c3;
+    --accent: #8a4b2a;
+    --accent-ink: #fffaf4;
+    --accent-soft: #f1dccb;
+    --shadow: 0 1px 2px rgba(60, 35, 20, .06), 0 4px 16px rgba(60, 35, 20, .06);
+  }
+  @media (prefers-color-scheme: dark) {
+    :root {
+      --bg: #1b1512;
+      --surface: #261e1a;
+      --surface-2: #31261f;
+      --text: #f3e9df;
+      --muted: #b09d8d;
+      --line: #3d3029;
+      --accent: #e0a073;
+      --accent-ink: #1b1512;
+      --accent-soft: #3d2a1f;
+      --shadow: none;
+    }
+  }
+  * { box-sizing: border-box; }
+  html { -webkit-text-size-adjust: 100%; }
+  body {
+    margin: 0;
+    background: var(--bg);
+    color: var(--text);
+    font: 17px/1.45 -apple-system, BlinkMacSystemFont, "SF Pro Text", "Segoe UI", Roboto, sans-serif;
+    -webkit-font-smoothing: antialiased;
+  }
+  button, input { font: inherit; color: inherit; }
+  button { cursor: pointer; -webkit-tap-highlight-color: transparent; }
+  .wrap {
+    max-width: 480px;
+    margin: 0 auto;
+    padding: calc(12px + env(safe-area-inset-top)) calc(16px + env(safe-area-inset-right)) calc(32px + env(safe-area-inset-bottom)) calc(16px + env(safe-area-inset-left));
+  }
+  header {
+    display: flex; align-items: center; justify-content: space-between; gap: 12px;
+    min-height: 48px; margin-bottom: 12px;
+  }
+  h1 { font: 700 26px/1.1 ui-serif, "New York", Georgia, serif; margin: 0; letter-spacing: -.01em; }
+  h2 { font-size: 13px; font-weight: 600; text-transform: uppercase; letter-spacing: .06em; color: var(--muted); margin: 24px 4px 8px; }
+  .back {
+    background: none; border: 0; padding: 8px 8px 8px 0; color: var(--accent); font-weight: 600;
+    display: inline-flex; align-items: center; gap: 4px; min-height: 44px;
+  }
+  .seg {
+    display: inline-flex; background: var(--surface-2); border-radius: 10px; padding: 3px;
+  }
+  .seg button {
+    border: 0; background: none; padding: 6px 14px; border-radius: 8px; font-size: 15px; font-weight: 600; color: var(--muted);
+  }
+  .seg button[aria-pressed="true"] { background: var(--surface); color: var(--text); box-shadow: var(--shadow); }
+
+  /* Picker */
+  .methods { display: grid; gap: 12px; }
+  .method {
+    display: flex; align-items: center; gap: 16px; width: 100%; text-align: left;
+    background: var(--surface); border: 1px solid var(--line); border-radius: 18px; padding: 20px;
+    box-shadow: var(--shadow); transition: transform .08s ease;
+  }
+  .method:active { transform: scale(.98); }
+  .method .ico { font-size: 34px; width: 52px; height: 52px; display: grid; place-items: center; background: var(--accent-soft); border-radius: 14px; flex: none; }
+  .method .name { font-weight: 700; font-size: 20px; display: block; }
+  .method .meta { color: var(--muted); font-size: 15px; }
+  .method .chev { margin-left: auto; color: var(--muted); font-size: 22px; }
+
+  /* Calculator */
+  .card { background: var(--surface); border: 1px solid var(--line); border-radius: 18px; padding: 16px; box-shadow: var(--shadow); }
+  .field + .field { border-top: 1px solid var(--line); margin-top: 14px; padding-top: 14px; }
+  .field label { display: block; font-size: 14px; font-weight: 600; color: var(--muted); margin-bottom: 6px; }
+  .stepper { display: flex; align-items: center; gap: 8px; }
+  .stepper button {
+    width: 48px; height: 48px; flex: none; border-radius: 14px; border: 0; background: var(--surface-2);
+    font-size: 24px; font-weight: 500; line-height: 1; color: var(--accent);
+  }
+  .stepper button:active { background: var(--accent-soft); }
+  .num {
+    flex: 1; min-width: 0; display: flex; align-items: baseline; justify-content: center; gap: 6px;
+    background: var(--bg); border-radius: 14px; height: 56px; padding: 0 12px;
+  }
+  .num input {
+    width: 100%; min-width: 0; border: 0; background: none; text-align: right; outline: none;
+    font-size: 30px; font-weight: 700; font-variant-numeric: tabular-nums; padding: 0; height: 56px;
+  }
+  .num .unit { font-size: 17px; color: var(--muted); flex: none; width: 2.2em; }
+  .sub { font-size: 14px; color: var(--muted); text-align: center; margin-top: 6px; min-height: 1.2em; }
+
+  .grind { display: flex; align-items: center; gap: 16px; }
+  .grind .big {
+    font: 800 48px/1 ui-rounded, -apple-system, sans-serif; font-variant-numeric: tabular-nums;
+    background: var(--accent); color: var(--accent-ink); border-radius: 16px; min-width: 88px; height: 88px;
+    display: grid; place-items: center; flex: none;
+  }
+  .grind .what { font-weight: 700; }
+  .grind .detail { color: var(--muted); font-size: 15px; }
+  .tip { font-size: 14px; color: var(--muted); margin-top: 12px; padding-top: 12px; border-top: 1px solid var(--line); }
+  .tip b { color: var(--text); font-weight: 600; }
+  .rate { display: inline-flex; align-items: center; gap: 4px; }
+  .rate input {
+    width: 3.2em; border: 1px solid var(--line); border-radius: 8px; background: var(--bg);
+    padding: 2px 6px; text-align: center; font-size: 15px;
+  }
+
+  ol.steps { list-style: none; counter-reset: s; margin: 0; padding: 0; }
+  ol.steps li { counter-increment: s; position: relative; padding: 0 0 0 44px; min-height: 30px; }
+  ol.steps li + li { margin-top: 14px; }
+  ol.steps li::before {
+    content: counter(s); position: absolute; left: 0; top: -1px; width: 30px; height: 30px; border-radius: 50%;
+    background: var(--accent-soft); color: var(--accent); font-weight: 700; font-size: 15px; display: grid; place-items: center;
+  }
+  ol.steps strong { font-variant-numeric: tabular-nums; }
+
+  .fixed { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; text-align: center; }
+  .fixed .v { font-size: 28px; font-weight: 700; font-variant-numeric: tabular-nums; }
+  .fixed .k { font-size: 14px; color: var(--muted); font-weight: 600; }
+
+  .timer { text-align: center; }
+  .timer .phase { font-size: 14px; font-weight: 600; text-transform: uppercase; letter-spacing: .06em; color: var(--muted); }
+  .timer .clock { font: 800 64px/1.1 ui-rounded, -apple-system, sans-serif; font-variant-numeric: tabular-nums; margin: 4px 0; }
+  .timer .next { color: var(--muted); font-size: 15px; min-height: 1.4em; }
+  .timer.alert .clock, .timer.alert .phase { color: var(--accent); }
+  .btn {
+    width: 100%; height: 52px; border-radius: 14px; border: 0; margin-top: 14px;
+    background: var(--accent); color: var(--accent-ink); font-weight: 700; font-size: 17px;
+  }
+  .btn.secondary { background: var(--surface-2); color: var(--text); }
+  .row { display: flex; gap: 10px; }
+  .row .btn { flex: 1; }
+  .note { font-size: 14px; color: var(--muted); margin: 10px 4px 0; }
+  [hidden] { display: none !important; }
+</style>
+</head>
+<body>
+<div class="wrap">
+  <main id="home">
+    <header>
+      <h1>Coffee</h1>
+      <div class="seg" role="group" aria-label="Units">
+        <button type="button" data-unit="g">g</button>
+        <button type="button" data-unit="oz">oz</button>
+      </div>
+    </header>
+    <div class="methods">
+      <button class="method" data-go="drip">
+        <span class="ico" aria-hidden="true">☕️</span>
+        <span><span class="name">Drip</span><span class="meta">Grind 28 · 1:16</span></span>
+        <span class="chev" aria-hidden="true">›</span>
+      </button>
+      <button class="method" data-go="press">
+        <span class="ico" aria-hidden="true">🫖</span>
+        <span><span class="name">French Press</span><span class="meta">Grind 34 · 1:15</span></span>
+        <span class="chev" aria-hidden="true">›</span>
+      </button>
+      <button class="method" data-go="moka">
+        <span class="ico" aria-hidden="true">🔥</span>
+        <span><span class="name">Moka Pot</span><span class="meta">Grind 15 · 6-cup Bialetti</span></span>
+        <span class="chev" aria-hidden="true">›</span>
+      </button>
+    </div>
+    <p class="note">Grind settings are for the Baratza Encore ESP.</p>
+  </main>
+
+  <main id="calc" hidden></main>
+</div>
+
+<script>
+(() => {
+  const OZ = 28.3495;          // grams per (weight) ounce
+  const CUP = 5 * OZ;          // a drip carafe "cup" = 5 oz
+
+  const METHODS = {
+    drip:  { name: 'Drip', ratio: 16, grind: 28, water: 4 * CUP },
+    press: { name: 'French Press', ratio: 15, grind: 34, water: 20 * OZ },
+    moka:  { name: 'Moka Pot', grind: 15, fixed: true, water: 300, coffee: 25 },
+  };
+
+  // ---- persisted state ----
+  const KEY = 'coffee-v1';
+  const state = { unit: 'g', gps: 2.0, drip: {}, press: {} };
+  try { Object.assign(state, JSON.parse(localStorage.getItem(KEY)) || {}); } catch (e) {}
+  for (const id of ['drip', 'press']) {
+    state[id] = Object.assign({ water: METHODS[id].water, ratio: METHODS[id].ratio }, state[id]);
+  }
+  const save = () => { try { localStorage.setItem(KEY, JSON.stringify(state)); } catch (e) {} };
+
+  // ---- formatting ----
+  const round = (n, d) => { const f = 10 ** d; return Math.round(n * f) / f; };
+  const isOz = () => state.unit === 'oz';
+  // value shown in an input, in the current unit
+  const toInput = (g, kind) => isOz()
+    ? String(round(g / OZ, kind === 'water' ? 1 : 2))
+    : String(round(g, kind === 'water' ? 0 : 1));
+  // text with unit, for steps
+  const fmt = (g, kind) => toInput(g, kind) + (isOz() ? ' oz' : ' g');
+  const fromInput = (v) => {
+    const n = parseFloat(String(v).replace(',', '.'));
+    return isFinite(n) && n > 0 ? (isOz() ? n * OZ : n) : null;
+  };
+  const cupsText = (g) => { const c = round(g / CUP, 1); return c + (c === 1 ? ' cup' : ' cups'); };
+  const secs = (g) => Math.max(1, Math.round(g / state.gps));
+
+  // ---- units toggle ----
+  const syncUnitButtons = () => document.querySelectorAll('[data-unit]').forEach(b =>
+    b.setAttribute('aria-pressed', String(b.dataset.unit === state.unit)));
+  document.addEventListener('click', (e) => {
+    const u = e.target.closest('[data-unit]');
+    if (u) { state.unit = u.dataset.unit; save(); syncUnitButtons(); route(); return; }
+    const go = e.target.closest('[data-go]');
+    if (go) { cameFromHome = true; location.hash = go.dataset.go; }
+  });
+
+  // ---- routing ----
+  const home = document.getElementById('home');
+  const calc = document.getElementById('calc');
+  let cleanup = null;
+  let cameFromHome = false;
+  function route() {
+    if (cleanup) { cleanup(); cleanup = null; }
+    const id = location.hash.slice(1);
+    if (!METHODS[id]) { cameFromHome = false; calc.hidden = true; home.hidden = false; document.title = 'Coffee'; syncUnitButtons(); return; }
+    home.hidden = true; calc.hidden = false;
+    document.title = METHODS[id].name + ' · Coffee';
+    if (id === 'moka') renderMoka(); else renderCalc(id);
+    syncUnitButtons();
+    window.scrollTo(0, 0);
+  }
+  window.addEventListener('hashchange', route);
+
+  const headerHTML = (name) => `
+    <header>
+      <button class="back" type="button" data-back>‹ Methods</button>
+      <div class="seg" role="group" aria-label="Units">
+        <button type="button" data-unit="g">g</button>
+        <button type="button" data-unit="oz">oz</button>
+      </div>
+    </header>
+    <h1>${name}</h1>`;
+  calc.addEventListener('click', (e) => {
+    // go back if we got here from the picker, otherwise (opened directly on #drip) just clear the hash
+    if (e.target.closest('[data-back]')) cameFromHome ? history.back() : (location.hash = '');
+  });
+
+  const stepperHTML = (key, label) => `
+    <div class="field">
+      <label for="in-${key}">${label}</label>
+      <div class="stepper">
+        <button type="button" data-step="${key}" data-dir="-1" aria-label="Less ${label.toLowerCase()}">−</button>
+        <div class="num">
+          <input id="in-${key}" inputmode="decimal" enterkeyhint="done" autocomplete="off">
+          <span class="unit" data-unit-label="${key}"></span>
+        </div>
+        <button type="button" data-step="${key}" data-dir="1" aria-label="More ${label.toLowerCase()}">+</button>
+      </div>
+      <div class="sub" id="sub-${key}"></div>
+    </div>`;
+
+  // ---- drip & french press ----
+  function renderCalc(id) {
+    const m = METHODS[id];
+    const s = state[id];
+    const isDrip = id === 'drip';
+
+    calc.innerHTML = headerHTML(m.name) + `
+      <h2>Amounts</h2>
+      <div class="card">
+        ${isDrip ? stepperHTML('cups', 'Carafe cups') : ''}
+        ${stepperHTML('water', 'Water')}
+        ${stepperHTML('coffee', 'Coffee')}
+        ${stepperHTML('ratio', 'Ratio (water per 1 coffee)')}
+      </div>
+
+      <h2>Grind</h2>
+      <div class="card">
+        <div class="grind">
+          <div class="big">${m.grind}</div>
+          <div>
+            <div class="what">Encore ESP setting ${m.grind}</div>
+            <div class="detail" id="grind-detail"></div>
+          </div>
+        </div>
+        <div class="tip">${isDrip
+          ? `Grind time assumes the grinder puts out <span class="rate"><input id="gps" inputmode="decimal" aria-label="Grams per second"> g/s</span>. Weigh one grind to check yours. Cone filter? Try <b>24–26</b>.`
+          : `Muddy or silty cup? Go coarser, <b>36–38</b>. Thin or sour? Try <b>32</b>.`}</div>
+      </div>
+
+      ${isDrip ? '' : `
+      <h2>Timer</h2>
+      <div class="card timer" id="timer">
+        <div class="phase" id="t-phase">Ready</div>
+        <div class="clock" id="t-clock">0:30</div>
+        <div class="next" id="t-next">30 s bloom, then 4 min steep</div>
+        <div class="row">
+          <button class="btn" type="button" id="t-start">Start</button>
+          <button class="btn secondary" type="button" id="t-reset" hidden>Reset</button>
+        </div>
+      </div>`}
+
+      <h2>Steps</h2>
+      <div class="card"><ol class="steps" id="steps"></ol></div>
+    `;
+
+    const $ = (sel) => calc.querySelector(sel);
+    const inputs = { water: $('#in-water'), coffee: $('#in-coffee'), ratio: $('#in-ratio'), cups: $('#in-cups') };
+
+    const coffee = () => s.water / s.ratio;
+    const val = {
+      water:  () => toInput(s.water, 'water'),
+      coffee: () => toInput(coffee(), 'coffee'),
+      ratio:  () => String(round(s.ratio, 1)),
+      cups:   () => String(round(s.water / CUP, 1)),
+    };
+
+    function paint(except) {
+      for (const k in inputs) if (inputs[k] && k !== except) inputs[k].value = val[k]();
+      calc.querySelectorAll('[data-unit-label]').forEach(el => {
+        const k = el.dataset.unitLabel;
+        el.textContent = k === 'ratio' ? '' : k === 'cups' ? 'cups' : state.unit;
+      });
+      $('#sub-water').textContent = isOz()
+        ? `${round(s.water, 0)} g`
+        : `${round(s.water / OZ, 1)} oz`;
+      $('#sub-coffee').textContent = isOz() ? `${round(coffee(), 1)} g` : `${round(coffee() / OZ, 2)} oz`;
+      if (isDrip) $('#sub-cups').textContent = '1 carafe cup = 5 oz water';
+      $('#sub-ratio').textContent = s.ratio < 14 ? 'Very strong' : s.ratio < 15 ? 'Strong' : s.ratio <= 17 ? 'Standard' : s.ratio <= 18 ? 'Light' : 'Very light';
+
+      $('#grind-detail').textContent = isDrip
+        ? `Grind ~${secs(coffee())} s for ${fmt(coffee(), 'coffee')}`
+        : `Coarse · ${fmt(coffee(), 'coffee')}`;
+      $('#steps').innerHTML = (isDrip ? dripSteps : pressSteps)(s.water, coffee()).map(t => `<li>${t}</li>`).join('');
+      save();
+    }
+
+    function set(key, g) {
+      if (key === 'water') s.water = g;
+      else if (key === 'coffee') s.water = g * s.ratio;
+      else if (key === 'cups') s.water = g * CUP;
+      else if (key === 'ratio') s.ratio = g;
+      s.water = Math.min(Math.max(s.water, 30), 4000);
+      s.ratio = Math.min(Math.max(s.ratio, 8), 25);
+    }
+
+    for (const k in inputs) {
+      const el = inputs[k];
+      if (!el) continue;
+      el.addEventListener('input', () => {
+        const raw = parseFloat(el.value.replace(',', '.'));
+        if (!(raw > 0)) return;
+        set(k, k === 'ratio' || k === 'cups' ? raw : fromInput(el.value));
+        paint(k);
+      });
+      el.addEventListener('blur', () => paint());
+      el.addEventListener('focus', () => el.select());
+      el.addEventListener('keydown', (e) => { if (e.key === 'Enter') el.blur(); });
+    }
+
+    calc.querySelectorAll('[data-step]').forEach(b => b.addEventListener('click', () => {
+      const k = b.dataset.step, dir = +b.dataset.dir;
+      if (k === 'cups') set('cups', Math.max(1, Math.round(s.water / CUP) + dir));
+      else if (k === 'ratio') set('ratio', round(s.ratio + dir * 0.5, 1));
+      else if (k === 'water') {
+        const step = isOz() ? OZ : 25;
+        set('water', (Math.round(s.water / step) + dir) * step);
+      } else if (k === 'coffee') {
+        const step = isOz() ? OZ / 10 : 1;
+        set('coffee', Math.max(step, (Math.round(coffee() / step) + dir) * step));
+      }
+      paint();
+    }));
+
+    const gps = $('#gps');
+    if (gps) {
+      gps.value = state.gps;
+      gps.addEventListener('input', () => {
+        const n = parseFloat(gps.value.replace(',', '.'));
+        if (n > 0.2 && n < 10) { state.gps = n; paint(); }
+      });
+      gps.addEventListener('focus', () => gps.select());
+    }
+
+    paint();
+    if (!isDrip) cleanup = setupTimer();
+  }
+
+  const dripSteps = (water, coffee) => [
+    `Fill the reservoir with <strong>${fmt(water, 'water')}</strong> of water (<strong>${cupsText(water)}</strong> on the carafe).`,
+    `Grind <strong>${fmt(coffee, 'coffee')}</strong> on setting <strong>28</strong>, about <strong>${secs(coffee)} s</strong>.`,
+    `Put a filter in the basket, add the grounds, and give it a shake to level the bed.`,
+    `Start the brew. Serve within ~20 min; the hot plate stews it after that.`,
+  ];
+
+  const pressSteps = (water, coffee) => {
+    const bloom = Math.min(water, coffee * 2);
+    return [
+      `Heat water to ~<strong>200°F</strong> (boil, then wait about 30 s).`,
+      `Grind <strong>${fmt(coffee, 'coffee')}</strong> on setting <strong>34</strong> and add to the press.`,
+      `Start the timer. Pour <strong>${fmt(bloom, 'water')}</strong> to bloom, making sure all the grounds are wet. Wait 30 s.`,
+      `Pour the remaining <strong>${fmt(water - bloom, 'water')}</strong> (total <strong>${fmt(water, 'water')}</strong>). Lid on, plunger up. Steep <strong>4 min</strong>.`,
+      `Stir to break the crust and skim off the foam. Press slowly (~20 s) and pour it all right away so it stops brewing.`,
+    ];
+  };
+
+  // ---- french press timer ----
+  function setupTimer() {
+    const PHASES = [
+      { label: 'Bloom', secs: 30, next: 'Then pour the rest of the water' },
+      { label: 'Steep', secs: 240, next: 'Then stir, skim and press' },
+    ];
+    const box = calc.querySelector('#timer');
+    const ph = calc.querySelector('#t-phase'), clock = calc.querySelector('#t-clock'), next = calc.querySelector('#t-next');
+    const start = calc.querySelector('#t-start'), reset = calc.querySelector('#t-reset');
+    let t0 = 0, idx = 0, tick = null, audio = null, lock = null;
+
+    const mmss = (n) => `${Math.floor(n / 60)}:${String(n % 60).padStart(2, '0')}`;
+    function beep(times) {
+      if (navigator.vibrate) navigator.vibrate(times > 1 ? [200, 100, 200, 100, 400] : [250]);
+      if (!audio) return;
+      for (let i = 0; i < times; i++) {
+        const o = audio.createOscillator(), g = audio.createGain();
+        const at = audio.currentTime + i * 0.3;
+        o.frequency.value = 880; o.connect(g); g.connect(audio.destination);
+        g.gain.setValueAtTime(0.0001, at);
+        g.gain.exponentialRampToValueAtTime(0.3, at + 0.02);
+        g.gain.exponentialRampToValueAtTime(0.0001, at + 0.22);
+        o.start(at); o.stop(at + 0.25);
+      }
+    }
+    async function wake(on) {
+      try {
+        if (on && 'wakeLock' in navigator) lock = await navigator.wakeLock.request('screen');
+        else if (!on && lock) { await lock.release(); lock = null; }
+      } catch (e) {}
+    }
+    function stop() { clearInterval(tick); tick = null; wake(false); }
+    function idle() {
+      stop(); idx = 0; box.classList.remove('alert');
+      ph.textContent = 'Ready'; clock.textContent = mmss(PHASES[0].secs);
+      next.textContent = '30 s bloom, then 4 min steep';
+      start.hidden = false; start.textContent = 'Start'; reset.hidden = true;
+    }
+    function update() {
+      const p = PHASES[idx];
+      const left = Math.max(0, Math.ceil(p.secs - (Date.now() - t0) / 1000));
+      ph.textContent = p.label; clock.textContent = mmss(left); next.textContent = p.next;
+      if (left > 0) return;
+      if (idx < PHASES.length - 1) {
+        idx++; t0 = Date.now(); beep(1); update();
+      } else {
+        stop(); beep(3); box.classList.add('alert');
+        ph.textContent = 'Done'; clock.textContent = 'Press'; next.textContent = 'Stir, skim, press slowly, and pour';
+      }
+    }
+    start.addEventListener('click', () => {
+      try { audio = audio || new (window.AudioContext || window.webkitAudioContext)(); audio.resume(); } catch (e) {}
+      idx = 0; t0 = Date.now(); box.classList.remove('alert');
+      start.hidden = true; reset.hidden = false;
+      wake(true); update(); tick = setInterval(update, 250);
+    });
+    reset.addEventListener('click', idle);
+    const onVis = () => { if (document.visibilityState === 'visible' && tick) { wake(true); update(); } };
+    document.addEventListener('visibilitychange', onVis);
+    idle();
+    return () => { stop(); document.removeEventListener('visibilitychange', onVis); if (audio) audio.close(); };
+  }
+
+  // ---- moka pot (amounts fixed by the pot) ----
+  function renderMoka() {
+    const m = METHODS.moka;
+    const water = isOz() ? `${round(m.water / OZ, 1)} oz` : `${m.water} ml`;
+    calc.innerHTML = headerHTML(m.name) + `
+      <h2>6-cup Bialetti Moka Express</h2>
+      <div class="card">
+        <div class="fixed">
+          <div><div class="v">~${water}</div><div class="k">Water, to just under the valve</div></div>
+          <div><div class="v">~${fmt(m.coffee, 'coffee')}</div><div class="k">Coffee, a full level basket</div></div>
+        </div>
+        <div class="tip">The pot sets the amounts, so there's nothing to calculate. Makes ~${isOz() ? round(240 / OZ, 0) + ' oz' : '240 ml'}. Don't under-fill the basket to make less; it brews unevenly.</div>
+      </div>
+
+      <h2>Grind</h2>
+      <div class="card">
+        <div class="grind">
+          <div class="big">${m.grind}</div>
+          <div>
+            <div class="what">Encore ESP setting ${m.grind}</div>
+            <div class="detail">Fine, a bit coarser than espresso</div>
+          </div>
+        </div>
+        <div class="tip">Bitter or sputtering? Go coarser, <b>17–20</b>. Sour or thin? Go finer.</div>
+      </div>
+
+      <h2>Steps</h2>
+      <div class="card"><ol class="steps">
+        <li>Boil water. Fill the bottom chamber with the <strong>hot</strong> water to just below the valve. Starting hot keeps the grounds from cooking and tasting bitter or metallic.</li>
+        <li>Grind <strong>~${fmt(m.coffee, 'coffee')}</strong> on setting <strong>${m.grind}</strong>. Fill the basket completely and level it with a finger. <strong>Don't press it down.</strong> Wipe any grounds off the rim.</li>
+        <li>Drop in the basket and screw on the top, holding the base with a towel (it's hot).</li>
+        <li>Heat on <strong>medium-low</strong> with the lid open so you can watch.</li>
+        <li>When the coffee turns <strong>light brown</strong> and starts <strong>gurgling</strong>, take it off the heat and run the base under cold water to stop the brew.</li>
+      </ol></div>
+    `;
+  }
+
+  route();
+})();
+</script>
+</body>
+</html>
