@@ -195,9 +195,10 @@
   const CUP = 5 * OZ;          // a drip carafe "cup" = 5 oz
 
   const METHODS = {
-    drip:  { name: 'Drip', ratio: 16, grind: 28, water: 4 * CUP },
-    pourover: { name: 'Pourover', gear: 'Kalita Wave', ratio: 16, grind: 24, water: 320 },
-    press: { name: 'French Press', ratio: 15, grind: 34, water: 20 * OZ },
+    // maxWater: what the gear holds (OXO 9-cup carafe, Kalita Wave 185, ~24oz French press incl. grounds)
+    drip:  { name: 'Drip', ratio: 16, grind: 28, water: 4 * CUP, minWater: CUP, maxWater: 9 * CUP },
+    pourover: { name: 'Pourover', gear: 'Kalita Wave', ratio: 16, grind: 24, water: 320, maxWater: 480 },
+    press: { name: 'French Press', ratio: 15, grind: 34, water: 20 * OZ, maxWater: 22 * OZ },
     moka:  { name: 'Moka Pot', grind: 17, fixed: true, water: 300, coffee: 25 },
   };
 
@@ -353,8 +354,9 @@
       if (key === 'water') s.water = g;
       else if (key === 'coffee') s.water = g * m.ratio;
       else if (key === 'cups') s.water = g * CUP;
-      s.water = Math.min(Math.max(s.water, 30), 4000);
+      s.water = Math.min(Math.max(s.water, m.minWater || 30), m.maxWater);
     }
+    set('water', s.water);   // pull any saved amount back inside the limits
 
     for (const k in inputs) {
       const el = inputs[k];
