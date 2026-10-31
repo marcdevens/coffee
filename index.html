@@ -85,9 +85,10 @@
     box-shadow: var(--shadow); transition: transform .08s ease;
   }
   .method:active { transform: scale(.98); }
-  .method .ico { font-size: 34px; width: 52px; height: 52px; display: grid; place-items: center; background: var(--accent-soft); border-radius: 14px; flex: none; }
-  .method .name { font-weight: 700; font-size: 20px; display: block; }
-  .method .meta { color: var(--muted); font-size: 15px; }
+  .method .ico { width: 52px; height: 52px; display: grid; place-items: center; background: var(--accent-soft); color: var(--accent); border-radius: 14px; flex: none; }
+  /* IconOven (MIT) line icons */
+  .method .ico svg { width: 30px; height: 30px; fill: none; stroke: currentColor; stroke-width: 1.5; stroke-linecap: round; stroke-linejoin: round; }
+  .method .name { font-weight: 700; font-size: 20px; }
   .method .chev { margin-left: auto; color: var(--muted); font-size: 22px; }
 
   /* Calculator */
@@ -164,18 +165,18 @@
     </header>
     <div class="methods">
       <button class="method" data-go="drip">
-        <span class="ico" aria-hidden="true">☕️</span>
-        <span><span class="name">Drip</span><span class="meta">Grind 28 · 1:16</span></span>
+        <span class="ico" aria-hidden="true"><svg viewBox="0 0 24 24"><path d="M4.75 2.75h14.5a2 2 0 0 1 2 2v3.5h-12v10.5h12v2.5H4.75a2 2 0 0 1-2-2V4.75a2 2 0 0 1 2-2"/><path d="M12.75 11h4.75q1 0 .86.99l-.47 3.27q-.14.99-1.14.99H13.5q-1 0-1.14-.99l-.47-3.27q-.14-.99.86-.99"/></svg></span>
+        <span class="name">Drip</span>
         <span class="chev" aria-hidden="true">›</span>
       </button>
       <button class="method" data-go="press">
-        <span class="ico" aria-hidden="true">🫖</span>
-        <span><span class="name">French Press</span><span class="meta">Grind 34 · 1:15</span></span>
+        <span class="ico" aria-hidden="true"><svg viewBox="0 0 24 24"><path d="M8.5 2.75H13m-2.25 0v4.5"/><rect width="11" height="14" x="5.25" y="7.25" rx="2"/><path d="M5.25 12.5h11m0-2.75h2a2 2 0 0 1 2 2v4.5a2 2 0 0 1-2 2h-2"/></svg></span>
+        <span class="name">French Press</span>
         <span class="chev" aria-hidden="true">›</span>
       </button>
       <button class="method" data-go="moka">
-        <span class="ico" aria-hidden="true">🔥</span>
-        <span><span class="name">Moka Pot</span><span class="meta">Grind 15 · 6-cup Bialetti</span></span>
+        <span class="ico" aria-hidden="true"><svg viewBox="0 0 24 24"><path d="M10.5 2.75h3m-5.25 3h7.5q1 0 .78.97l-1.06 4.56q-.22.97-.06 1.96l1.18 7.02q.16.99-.84.99h-7.5q-1 0-.84-.99l1.18-7.02q.16-.99-.06-1.96L7.47 6.72q-.22-.97.78-.97m.5 6.5h6.5"/><path d="M16.4 7.25h2.85L18 12.75M7.6 7.25l-2.35-1.5"/></svg></span>
+        <span class="name">Moka Pot</span>
         <span class="chev" aria-hidden="true">›</span>
       </button>
     </div>
